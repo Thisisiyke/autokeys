@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>AutoKeys — Play the keyboard like a pro</title>
+<style>
+/* ══════════════════════════════════════════
+   AUTOKEYS — COMPLETE APP
+   Screens: Splash · Onboarding · Sign In ·
+   Play · Library · Setlists · Bluetooth ·
+   Profile · Settings · Premium · Notifications
+   · Referral · Tutorial
+══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1D9E75;--green-light:#E1F5EE;--green-mid:#9FE1CB;--green-dark:#085041;--green-deep:#0F6E56;
+  --blue:#378ADD;--blue-light:#E6F1FB;--amber:#BA7517;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;--purple-light:#EEEDFE;
+  --bg:#f5f5f3;--card:#ffffff;--border:#e0e0de;--border2:#ccc;
+  --text:#111;--text2:#666;--text3:#aaa;
+  --radius:12px;--radius-sm:8px;--radius-pill:20px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;}
+
+/* ── SCREEN ROUTER ── */
+.screen{display:none;flex-direction:column;max-width:420px;margin:0 auto;padding:1.25rem 1rem 2.5rem;gap:1rem;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ── SHARED COMPONENTS ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-.5px;}
+.logo span{color:var(--green);}
+.back-btn{width:32px;height:32px;border-radius:50%;border:.5px solid var(--border2);background:transparent;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text);cursor:pointer;}
+.back-btn:hover{background:#f0f0ee;}
+.page-title{font-size:19px;font-weight:600;color:var(--text);letter-spacing:-.4px;}
+.logo-sm{font-size:14px;font-weight:600;color:var(--text2);}
+.logo-sm span{color:var(--green);}
+.sec-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:4px;}
+.card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.btn-green{background:var(--green);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:600;cursor:pointer;width:100%;transition:background .15s;}
+.btn-green:hover{background:var(--green-deep);}
+.btn-outline{background:transparent;border:.5px solid var(--border2);border-radius:var(--radius);padding:13px;font-size:14px;color:var(--text2);cursor:pointer;width:100%;}
+.btn-outline:hover{background:#f0f0ee;}
+.input-field{width:100%;padding:11px 14px;border:.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;background:var(--card);color:var(--text);outline:none;}
+.input-field:focus{border-color:var(--green);}
+.badge-green{font-size:10px;padding:3px 9px;border-radius:var(--radius-pill);background:var(--green-light);color:var(--green-dark);font-weight:600;border:.5px solid var(--green-mid);}
+.stats-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.stat-c{background:#f0f0ee;border-radius:var(--radius-sm);padding:10px 12px;display:flex;flex-direction:column;gap:3px;}
+.stat-v{font-size:19px;font-weight:600;color:var(--text);line-height:1.1;}
+.stat-l{font-size:11px;color:var(--text3);}
+
+/* ── HAMBURGER ── */
+.hb{width:34px;height:34px;border-radius:var(--radius-sm);border:.5px solid var(--border2);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
+.hb.open{background:#f0f0ee;border-color:var(--green);}
+.hbl{width:16px;height:1.5px;background:var(--text);border-radius:2px;transition:all .25s;transform-origin:center;}
+.hb.open .hbl:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+.hb.open .hbl:nth-child(2){opacity:0;transform:scaleX(0);}
+.hb.open .hbl:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+
+/* ── DRAWER ── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:50;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;top:0;right:-270px;width:255px;height:100%;background:var(--card);border-left:.5px solid var(--border);z-index:51;display:flex;flex-direction:column;padding:1.5rem 0 2rem;transition:right .28s cubic-bezier(.4,0,.2,1);}
+.drawer.open{right:0;}
+.d-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem 1.1rem;border-bottom:.5px solid var(--border);margin-bottom:.4rem;}
+.d-close{width:27px;height:27px;border-radius:50%;border:.5px solid var(--border2);background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--text2);}
+.d-profile{display:flex;align-items:center;gap:10px;padding:10px 1.25rem 13px;border-bottom:.5px solid var(--border);margin-bottom:4px;}
+.d-av{width:36px;height:36px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--green-dark);flex-shrink:0;}
+.d-info{flex:1;min-width:0;}
+.d-name{font-size:13px;font-weight:600;color:var(--text);}
+.d-email{font-size:11px;color:var(--text3);}
+.d-nav{flex:1;display:flex;flex-direction:column;padding:4px 0;}
+.d-item{display:flex;align-items:center;gap:11px;padding:11px 1.25rem;cursor:pointer;transition:background .12s;position:relative;}
+.d-item:hover{background:#f0f0ee;}
+.d-item.active{background:var(--green-light);}
+.d-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green);border-radius:0 2px 2px 0;}
+.d-icon{width:30px;height:30px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#f0f0ee;}
+.d-item.active .d-icon{background:#C5EBD9;}
+.d-lbl{font-size:14px;color:var(--text);}
+.d-item.active .d-lbl{color:var(--green-dark);font-weight:600;}
+.d-arr{margin-left:auto;font-size:12px;color:var(--text3);}
+.d-div{height:.5px;background:var(--border);margin:5px 1.25rem;}
+.d-upgrade{margin:0 1rem;background:var(--green-light);border:.5px solid var(--green-mid);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:7px;}
+.d-up-t{font-size:13px;font-weight:600;color:var(--green-dark);}
+.d-up-s{font-size:11px;color:var(--green-deep);line-height:1.4;}
+.d-up-btn{background:var(--green);color:white;border:none;border-radius:var(--radius-sm);padding:8px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
+
+/* ══ SPLASH / ONBOARDING ══ */
+.splash{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding-top:3rem;flex:1;}
+.splash-icon{width:80px;height:80px;border-radius:22px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:4px;}
+.splash-logo{font-size:32px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+.splash-logo span{color:var(--green);}
+.splash-tag{font-size:14px;color:var(--text2);max-width:260px;line-height:1.5;}
+.ob-progress{display:flex;justify-content:center;gap:6px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);}
+.ob-dot.active{background:var(--green);width:20px;border-radius:3px;}
+.ob-dot.done{background:var(--green-mid);}
+.ob-title{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-.5px;line-height:1.2;}
+.ob-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-top:-4px;}
+.ob-illus{background:#f0f0ee;border-radius:var(--radius);height:150px;display:flex;align-items:center;justify-content:center;font-size:56px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.role-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 12px;cursor:pointer;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;}
+.role-card.sel{border:1.5px solid var(--green);background:var(--green-light);}
+.role-icon{font-size:22px;}
+.role-name{font-size:13px;font-weight:600;color:var(--text);}
+.role-card.sel .role-name{color:var(--green-dark);}
+.role-desc{font-size:11px;color:var(--text3);}
+.mini-genres{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:12px;}
+.mg-pill{font-size:11px;padding:5px 12px;border-radius:var(--radius-pill);background:var(--card);border:.5px solid var(--border);color:var(--text2);cursor:pointer;}
+.mg-pill.sel{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:600;}
+.perm-row{display:flex;align-items:center;gap:14px;background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;}
+.perm-row.granted{border-color:var(--green);}
+.perm-icon-w{width:36px;height:36px;border-radius:10px;background:#f0f0ee;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.perm-row.granted .perm-icon-w{background:var(--green-light);}
+.perm-t{flex:1;}
+.perm-name{font-size:14px;font-weight:600;color:var(--text);}
+.perm-desc{font-size:12px;color:var(--text3);margin-top:2px;}
+.perm-st{font-size:12px;color:var(--text3);}
+.perm-row.granted .perm-st{color:var(--green);font-weight:600;}
+.final-center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;flex:1;justify-content:center;}
+.final-circle{width:72px;height:72px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.checklist{width:100%;display:flex;flex-direction:column;gap:8px;text-align:left;}
+.chk-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);background:#f0f0ee;padding:10px 14px;border-radius:var(--radius-sm);}
+.chk-tick{width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:9px;color:white;flex-shrink:0;}
+
+/* ══ SIGN IN ══ */
+.signin-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:8px 0 4px;}
+.signin-icon{width:60px;height:60px;border-radius:18px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px;}
+.ret-card{display:flex;align-items:center;gap:12px;background:#f0f0ee;border:.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;}
+.ret-card:hover{border-color:var(--green);}
+.ret-av{width:40px;height:40px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--green-dark);flex-shrink:0;}
+.ret-info{flex:1;}
+.ret-name{font-size:14px;font-weight:600;color:var(--text);}
+.ret-email{font-size:12px;color:var(--text3);margin-top:1px;}
+.divider{display:flex;align-items:center;gap:10px;}
+.div-line{flex:1;height:.5px;background:var(--border);}
+.div-t{font-size:12px;color:var(--text3);}
+.social-row{display:flex;gap:8px;}
+.soc-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border:.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--card);font-size:13px;color:var(--text);cursor:pointer;}
+.soc-btn:hover{background:#f0f0ee;}
+.forgot-link{font-size:12px;color:var(--green);text-align:right;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text3);cursor:pointer;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-wrap .input-field{padding-right:40px;}
+.success-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;flex:1;}
+.user-pill{display:flex;align-items:center;gap:10px;background:#f0f0ee;border-radius:30px;padding:8px 16px 8px 8px;margin-top:4px;}
+.user-pill-av{width:32px;height:32px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--green-dark);}
+
+/* ══ PLAY SCREEN ══ */
+.status-bar{display:flex;align-items:center;gap:8px;background:#f0f0ee;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--text2);}
+.s-dot{width:8px;height:8px;border-radius:50%;background:#888;flex-shrink:0;transition:background .3s;}
+.s-dot.on{background:var(--green);animation:spulse 1s infinite;}
+.s-dot.bt{background:var(--blue);}
+@keyframes spulse{0%{box-shadow:0 0 0 0 rgba(29,158,117,.6);}70%{box-shadow:0 0 0 6px rgba(29,158,117,0);}100%{box-shadow:0 0 0 0 rgba(29,158,117,0);}}
+.genres-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.g-btn{border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card);padding:10px 4px;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.g-btn:hover{background:#f0f0ee;}
+.g-btn.active{border:1.5px solid var(--green);background:var(--green-light);}
+.g-icon{font-size:16px;}
+.g-name{font-size:10px;color:var(--text2);font-weight:500;}
+.g-btn.active .g-name{color:var(--green-dark);}
+.chord-display{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:15px;}
+.chord-main{font-size:34px;font-weight:600;color:var(--text);letter-spacing:-1px;transition:all .2s;}
+.chord-main.flash{color:var(--green);transform:scale(1.06);}
+.c-pills{display:flex;gap:6px;margin-top:11px;flex-wrap:wrap;}
+.c-pill{font-size:12px;padding:4px 10px;border-radius:var(--radius-pill);background:#f0f0ee;color:var(--text2);border:.5px solid var(--border);}
+.c-pill.active{background:var(--green);color:#fff;border-color:var(--green);}
+.override-panel{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:11px;}
+.ov-row{display:flex;align-items:center;gap:10px;}
+.ov-lbl{font-size:12px;color:var(--text2);font-weight:600;min-width:44px;}
+.ov-auto{font-size:11px;color:var(--green);margin-left:auto;cursor:pointer;white-space:nowrap;border:none;background:transparent;}
+.key-picker{display:flex;gap:4px;flex-wrap:wrap;flex:1;}
+.k-pill{font-size:11px;padding:4px 8px;border-radius:var(--radius-pill);border:.5px solid var(--border);background:#f0f0ee;color:var(--text2);cursor:pointer;}
+.k-pill.active{background:var(--green);color:white;border-color:var(--green);font-weight:600;}
+.bpm-ctrl{display:flex;align-items:center;gap:8px;flex:1;}
+.bpm-btn{width:28px;height:28px;border-radius:50%;border:.5px solid var(--border2);background:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text);flex-shrink:0;line-height:1;}
+.bpm-disp{flex:1;text-align:center;font-size:18px;font-weight:600;color:var(--text);}
+.bpm-unit{font-size:11px;color:var(--text3);font-weight:400;}
+.ov-warn{display:none;font-size:11px;color:var(--amber);background:var(--amber-light);border-radius:6px;padding:6px 10px;align-items:center;gap:6px;}
+.ov-warn.show{display:flex;}
+.ov-div{height:.5px;background:var(--border);}
+.wave-wrap{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:11px 15px;display:flex;align-items:center;gap:10px;}
+.wave-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;}
+.waveform{flex:1;display:flex;align-items:center;gap:2.5px;height:32px;}
+.wb{flex:1;border-radius:2px;background:var(--border2);min-height:3px;transition:height .1s ease,background .2s;}
+.wb.hot{background:var(--green);}
+.wb.warm{background:var(--green-mid);}
+.piano-wrap{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 14px 18px;overflow:hidden;}
+.piano{position:relative;height:82px;display:flex;gap:2px;}
+.wk{flex:1;background:var(--card);border:.5px solid var(--border2);border-radius:0 0 5px 5px;height:100%;transition:background .12s,border-color .12s,box-shadow .12s;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;}
+.wk span{font-size:9px;color:var(--text3);}
+.wk.lit{background:var(--green-mid);border-color:var(--green);box-shadow:0 0 0 1.5px var(--green) inset;}
+.wk.lit span{color:var(--green-dark);}
+@keyframes kg{0%{background:#5DCAA5;}100%{background:var(--green-mid);}}
+.wk.glow{animation:kg .35s ease-out;}
+.bks{position:absolute;top:0;left:0;right:0;height:52%;display:flex;pointer-events:none;}
+.bsp{flex:1;}
+.bk{width:26px;margin-left:-13px;margin-right:-13px;background:#2C2C2A;border-radius:0 0 3px 3px;height:100%;z-index:2;transition:background .12s;pointer-events:auto;cursor:pointer;flex-shrink:0;}
+.bk.lit{background:var(--green);}
+.vol-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f0f0ee;border-radius:var(--radius-sm);}
+.vol-lbl{font-size:12px;color:var(--text2);min-width:44px;}
+.vol-row input{flex:1;}
+.vol-val{font-size:12px;color:var(--text2);min-width:30px;text-align:right;}
+.controls{display:flex;gap:8px;}
+.btn-listen{flex:1;padding:14px;border-radius:var(--radius);border:none;background:var(--green);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-listen:hover{background:var(--green-deep);}
+.btn-listen.stop{background:var(--red);}
+.btn-sq{padding:14px 16px;border-radius:var(--radius);border:.5px solid var(--border2);background:transparent;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.btn-sq:hover{background:#f0f0ee;}
+.btn-sq.conn{border-color:var(--blue);color:var(--blue);}
+
+/* SAVE SHEET */
+.sheet-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:60;align-items:flex-end;justify-content:center;}
+.sheet-back.open{display:flex;}
+.sheet{background:var(--card);border-radius:18px 18px 0 0;padding:20px 20px 36px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:13px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.sheet-back.open .sheet{transform:translateY(0);}
+.sh-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto -4px;}
+.sh-title{font-size:16px;font-weight:600;color:var(--text);}
+.sh-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.sh-tag{font-size:12px;padding:4px 12px;border-radius:var(--radius-pill);background:var(--green-light);color:var(--green-dark);border:.5px solid var(--green-mid);font-weight:600;}
+.sh-actions{display:flex;gap:8px;}
+.sh-save{flex:1;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;}
+.sh-save:hover{background:var(--green-deep);}
+.sh-disc{padding:13px 18px;background:transparent;border:.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text2);cursor:pointer;}
+
+/* ══ LIBRARY ══ */
+.search-wrap{position:relative;}
+.search-wrap input{width:100%;padding:10px 14px 10px 36px;border:.5px solid var(--border2);border-radius:var(--radius);font-size:14px;background:var(--card);color:var(--text);outline:none;}
+.search-wrap input:focus{border-color:var(--green);}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text3);}
+.filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.f-tab{flex-shrink:0;padding:5px 13px;border-radius:var(--radius-pill);border:.5px solid var(--border);background:var(--card);font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;}
+.f-tab.active{background:var(--green);color:white;border-color:var(--green);font-weight:600;}
+.song-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;align-items:center;gap:11px;cursor:pointer;}
+.song-card:hover{background:#f0f0ee;}
+.song-card.sel{border:1.5px solid var(--green);background:var(--green-light);}
+.s-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:#f0f0ee;}
+.song-card.sel .s-ico{background:#C5EBD9;}
+.s-nm{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.song-card.sel .s-nm{color:var(--green-dark);}
+.s-mt{font-size:11px;color:var(--text3);margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.mdot{width:3px;height:3px;border-radius:50%;background:var(--border2);}
+.fav{font-size:14px;cursor:pointer;color:var(--text3);}
+.fav.on{color:var(--amber);}
+.load-bar{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;display:none;margin-top:4px;}
+.load-bar.show{display:block;}
+.load-bar:hover{background:var(--green-deep);}
+
+/* ══ SETLIST ══ */
+.sl-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;}
+.sl-card.open{border-color:var(--green);}
+.sl-head{display:flex;align-items:center;gap:12px;padding:13px 16px;}
+.sl-icon{width:38px;height:38px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sl-nm{font-size:14px;font-weight:600;color:var(--text);}
+.sl-mt{font-size:11px;color:var(--text3);margin-top:2px;}
+.sl-arr{font-size:14px;color:var(--text3);margin-left:auto;transition:transform .2s;}
+.sl-card.open .sl-arr{transform:rotate(90deg);}
+.sl-body{display:none;border-top:.5px solid var(--border);}
+.sl-card.open .sl-body{display:block;}
+.sl-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:.5px solid var(--border);}
+.sl-row:last-child{border-bottom:none;}
+.sl-num{font-size:11px;color:var(--text3);width:16px;text-align:center;flex-shrink:0;}
+.sl-sico{font-size:15px;width:24px;text-align:center;flex-shrink:0;}
+.sl-snm{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.sl-smt{font-size:11px;color:var(--text3);}
+.sl-footer{display:flex;gap:8px;padding:12px 16px;background:#f0f0ee;border-top:.5px solid var(--border);}
+.sl-play{flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;}
+.sl-edit{padding:10px 14px;border:.5px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;color:var(--text2);background:transparent;cursor:pointer;}
+.sl-del{padding:10px 14px;border:.5px solid #F09595;border-radius:var(--radius-sm);font-size:13px;color:var(--red);background:transparent;cursor:pointer;}
+.new-sl-btn{font-size:12px;padding:6px 14px;border-radius:var(--radius-pill);background:var(--green);color:white;border:none;cursor:pointer;font-weight:600;}
+.sl-pick-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;}
+.sl-pick-row.picked{border-color:var(--green);background:var(--green-light);}
+.sl-pick-chk{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+.sl-pick-row.picked .sl-pick-chk{background:var(--green);border-color:var(--green);color:white;}
+
+/* ══ BLUETOOTH ══ */
+.bt-status-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;}
+.bt-anim{width:52px;height:52px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;}
+.bt-ring{position:absolute;border-radius:50%;border:1.5px solid var(--blue);animation:btr 2s infinite;opacity:0;}
+.bt-ring:nth-child(1){width:38px;height:38px;animation-delay:0s;}
+.bt-ring:nth-child(2){width:50px;height:50px;animation-delay:.6s;}
+@keyframes btr{0%{opacity:.7;transform:scale(.7);}100%{opacity:0;transform:scale(1.1);}}
+.bt-toggle{padding:8px 16px;border-radius:var(--radius-pill);font-size:12px;font-weight:600;cursor:pointer;border:none;}
+.bt-toggle.scan{background:var(--green);color:white;}
+.bt-toggle.stop{background:var(--red-light);color:var(--red);}
+.dev-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.dev-card:hover{background:#f0f0ee;}
+.dev-card.conn{border:1.5px solid var(--blue);background:var(--blue-light);}
+.dev-ico{width:38px;height:38px;border-radius:10px;background:#f0f0ee;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.dev-card.conn .dev-ico{background:#DAEAF9;}
+.dev-nm{font-size:14px;font-weight:600;color:var(--text);}
+.dev-mt{font-size:11px;color:var(--text3);margin-top:2px;}
+.dev-card.conn .dev-mt{color:var(--blue);}
+.dev-sig{font-size:12px;color:var(--text3);}
+.dev-conn-b{font-size:10px;padding:3px 9px;border-radius:var(--radius-pill);background:var(--blue);color:white;font-weight:600;}
+.dev-disc{font-size:11px;padding:4px 10px;border-radius:var(--radius-pill);border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;}
+.bt-tip{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:8px;line-height:1.5;}
+.bt-tip-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px;}
+
+/* ══ PROFILE ══ */
+.av-section{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 4px;}
+.av-wrap{position:relative;cursor:pointer;}
+.av{width:76px;height:76px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600;color:var(--green-dark);border:2px solid var(--green-mid);}
+.av-edit{position:absolute;bottom:2px;right:2px;width:22px;height:22px;border-radius:50%;background:var(--green);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;}
+.av-name{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.4px;}
+.av-role{font-size:13px;color:var(--text2);}
+.info-group{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.info-row{display:flex;align-items:center;padding:13px 16px;border-bottom:.5px solid var(--border);gap:12px;cursor:pointer;}
+.info-row:last-child{border-bottom:none;}
+.info-row:hover{background:#f0f0ee;}
+.info-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.info-lbl{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.info-val{font-size:14px;color:var(--text);}
+.act-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:.5px solid var(--border);border-radius:var(--radius-sm);}
+.act-ico{font-size:16px;flex-shrink:0;}
+.act-txt{flex:1;font-size:13px;color:var(--text2);}
+.act-txt strong{color:var(--text);font-weight:600;}
+.act-time{font-size:11px;color:var(--text3);flex-shrink:0;}
+.danger-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:.5px solid var(--border);cursor:pointer;}
+.danger-row:last-child{border-bottom:none;}
+.danger-row:hover{background:var(--red-light);}
+.danger-lbl{font-size:14px;color:var(--red);}
+
+/* EDIT MODAL */
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:70;align-items:flex-end;justify-content:center;}
+.modal-back.open{display:flex;}
+.modal-sheet{background:var(--card);border-radius:18px 18px 0 0;padding:20px 20px 36px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.modal-back.open .modal-sheet{transform:translateY(0);}
+.m-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto -4px;}
+.m-title{font-size:16px;font-weight:600;color:var(--text);}
+
+/* ══ SETTINGS ══ */
+.set-group{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.set-row{display:flex;align-items:center;padding:13px 16px;border-bottom:.5px solid var(--border);gap:12px;cursor:pointer;}
+.set-row:last-child{border-bottom:none;}
+.set-row:hover{background:#f0f0ee;}
+.set-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.si-teal{background:var(--green-light);}
+.si-blue{background:var(--blue-light);}
+.si-amber{background:var(--amber-light);}
+.si-gray{background:#f0f0ee;}
+.si-purple{background:var(--purple-light);}
+.si-coral{background:#FAECE7;}
+.set-nm{font-size:14px;color:var(--text);}
+.set-ds{font-size:11px;color:var(--text3);margin-top:1px;}
+.set-val{font-size:12px;color:var(--text2);}
+.toggle{width:38px;height:21px;border-radius:11px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--green);}
+.toggle.off{background:var(--border2);}
+.toggle::after{content:'';width:15px;height:15px;border-radius:50%;background:white;position:absolute;top:3px;transition:left .2s;}
+.toggle.on::after{left:20px;}
+.toggle.off::after{left:3px;}
+.sel-pill{font-size:12px;color:var(--text2);background:#f0f0ee;border:.5px solid var(--border);border-radius:var(--radius-pill);padding:3px 10px;cursor:pointer;appearance:none;-webkit-appearance:none;outline:none;}
+.upgrade-card{background:var(--green-light);border:.5px solid var(--green-mid);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;}
+.up-t{font-size:14px;font-weight:600;color:var(--green-dark);}
+.up-s{font-size:12px;color:var(--green-deep);margin-top:3px;}
+.up-btn{background:var(--green);color:white;border:none;border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+/* ══ PREMIUM ══ */
+.prem-hero{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:22px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.prem-icon{width:56px;height:56px;border-radius:16px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px;}
+.prem-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px;}
+.prem-sub{font-size:13px;color:var(--text2);line-height:1.5;max-width:280px;}
+.bill-toggle{display:flex;background:#f0f0ee;border-radius:30px;padding:3px;gap:2px;margin-top:4px;}
+.bill-opt{padding:6px 18px;border-radius:30px;border:none;font-size:13px;cursor:pointer;background:transparent;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.bill-opt.active{background:var(--card);color:var(--text);font-weight:600;border:.5px solid var(--border);}
+.save-b{font-size:10px;background:var(--green);color:white;padding:2px 7px;border-radius:20px;font-weight:600;}
+.plan-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;position:relative;}
+.plan-card.sel{border:1.5px solid var(--green);}
+.plan-card.pop{border:1.5px solid var(--green);}
+.pop-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--green);color:white;font-size:10px;font-weight:600;padding:3px 12px;border-radius:20px;white-space:nowrap;}
+.plan-nm{font-size:15px;font-weight:600;color:var(--text);}
+.plan-tg{font-size:12px;color:var(--text3);margin-top:2px;}
+.plan-pr{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px;}
+.plan-pd{font-size:11px;color:var(--text3);}
+.plan-ws{font-size:11px;color:var(--text3);text-decoration:line-through;}
+.feat-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-top:6px;}
+.feat-chk{width:16px;height:16px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--green);flex-shrink:0;font-weight:600;}
+.feat-chk.lock{background:#f0f0ee;color:var(--text3);}
+.sel-ind{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;}
+.plan-card.sel .sel-ind,.plan-card.pop .sel-ind{background:var(--green);border-color:var(--green);}
+.sel-dot{width:8px;height:8px;border-radius:50%;background:white;display:none;}
+.plan-card.sel .sel-dot,.plan-card.pop .sel-dot{display:block;}
+.trust-row{display:flex;justify-content:center;gap:20px;}
+.trust-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.comp-link{text-align:center;font-size:12px;color:var(--green);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.restore-link{text-align:center;font-size:12px;color:var(--text3);cursor:pointer;}
+
+/* ══ NOTIFICATIONS ══ */
+.notif-card{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;gap:12px;cursor:pointer;}
+.notif-card:hover{background:#f0f0ee;}
+.notif-card.unread{border-left:3px solid var(--green);}
+.notif-card.unread-w{border-left:3px solid var(--amber);}
+.notif-card.unread-b{border-left:3px solid var(--blue);}
+.notif-card.unread-r{border-left:3px solid #E24B4A;}
+.notif-card.read{opacity:.72;}
+.n-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ni-g{background:var(--green-light);}
+.ni-a{background:var(--amber-light);}
+.ni-b{background:var(--blue-light);}
+.ni-r{background:var(--red-light);}
+.ni-p{background:var(--purple-light);}
+.ni-gr{background:#f0f0ee;}
+.n-body{flex:1;min-width:0;}
+.n-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3;}
+.notif-card.read .n-title{font-weight:400;color:var(--text2);}
+.n-desc{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5;}
+.n-time{font-size:11px;color:var(--text3);margin-top:6px;}
+.n-cta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+.n-btn{font-size:12px;padding:6px 14px;border-radius:var(--radius-pill);border:none;cursor:pointer;font-weight:600;}
+.n-btn.g{background:var(--green);color:white;}
+.n-btn.a{background:var(--amber);color:white;}
+.n-btn.b{background:var(--blue);color:white;}
+.n-btn.r{background:var(--red);color:white;}
+.n-btn.sec{background:transparent;border:.5px solid var(--border2);color:var(--text2);}
+.n-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.u-dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+.u-dot.a{background:var(--amber);}
+.u-dot.b{background:var(--blue);}
+.u-dot.r{background:#E24B4A;}
+.n-x{font-size:11px;color:var(--text3);cursor:pointer;border:none;background:transparent;}
+.pref-row{display:flex;align-items:center;padding:13px 16px;border-bottom:.5px solid var(--border);gap:12px;}
+.pref-row:last-child{border-bottom:none;}
+.pref-ico{font-size:15px;width:22px;text-align:center;flex-shrink:0;}
+.pref-nm{font-size:14px;color:var(--text);}
+.pref-ds{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* ══ REFERRAL ══ */
+.ref-hero{background:var(--green-light);border:.5px solid var(--green-mid);border-radius:16px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;}
+.ref-title{font-size:19px;font-weight:700;color:var(--green-dark);letter-spacing:-.4px;line-height:1.2;}
+.ref-sub{font-size:13px;color:var(--green-deep);line-height:1.5;max-width:280px;}
+.rew-row{display:flex;gap:8px;justify-content:center;margin-top:2px;}
+.rew-pill{font-size:12px;padding:5px 14px;border-radius:var(--radius-pill);background:white;color:var(--green-dark);font-weight:600;border:.5px solid var(--green-mid);display:flex;align-items:center;gap:5px;}
+.prog-wrap{background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.prog-hdr{display:flex;align-items:center;justify-content:space-between;}
+.prog-t{font-size:13px;font-weight:600;color:var(--text);}
+.prog-bg{height:8px;background:#f0f0ee;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:4px;transition:width .6s ease;}
+.prog-lbls{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);}
+.link-box{display:flex;align-items:center;gap:8px;background:#f0f0ee;border:.5px solid var(--border2);border-radius:var(--radius);padding:10px 14px;}
+.link-txt{flex:1;font-size:13px;color:var(--green);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.copy-btn{padding:7px 14px;border-radius:var(--radius-sm);background:var(--green);color:white;border:none;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.copy-btn.copied{background:var(--green-dark);}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sh-btn{display:flex;align-items:center;gap:10px;padding:13px 16px;border:.5px solid var(--border);border-radius:var(--radius);background:var(--card);cursor:pointer;}
+.sh-btn:hover{background:#f0f0ee;}
+.shi{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sh-nm{font-size:13px;font-weight:600;color:var(--text);}
+.sh-ds{font-size:11px;color:var(--text3);margin-top:1px;}
+.email-row{display:flex;gap:8px;}
+.email-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.e-tag{font-size:12px;padding:4px 10px;border-radius:var(--radius-pill);background:#f0f0ee;border:.5px solid var(--border);color:var(--text2);display:flex;align-items:center;gap:5px;}
+.e-x{cursor:pointer;color:var(--text3);font-size:11px;}
+.bulk-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;display:none;margin-top:4px;}
+.bulk-btn.show{display:block;}
+.inv-row{display:flex;align-items:center;gap:10px;background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
+.inv-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.inv-nm{font-size:13px;font-weight:600;color:var(--text);}
+.inv-em{font-size:11px;color:var(--text3);margin-top:1px;}
+.inv-b{font-size:10px;padding:3px 9px;border-radius:var(--radius-pill);font-weight:600;flex-shrink:0;}
+.b-join{background:var(--green-light);color:var(--green-dark);border:.5px solid var(--green-mid);}
+.b-pend{background:var(--amber-light);color:#854F0B;border:.5px solid #FAC775;}
+.b-rew{background:var(--purple-light);color:#3C3489;border:.5px solid #AFA9EC;}
+.how-step{display:flex;gap:14px;padding:12px 0;position:relative;}
+.how-step:not(:last-child)::before{content:'';position:absolute;left:15px;top:38px;bottom:0;width:1.5px;background:var(--border);}
+.hs-c{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.hs1{background:var(--green-light);color:var(--green-dark);}
+.hs2{background:var(--blue-light);color:#185FA5;}
+.hs3{background:var(--amber-light);color:#633806;}
+.hs4{background:var(--purple-light);color:#3C3489;}
+.hs-t{font-size:13px;font-weight:600;color:var(--text);}
+.hs-d{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.4;}
+
+/* ══ TUTORIAL ══ */
+.tut-mask{display:none;position:fixed;inset:0;z-index:100;}
+.tut-mask.active{display:block;}
+.tut-spotlight{position:fixed;border-radius:14px;box-shadow:0 0 0 4px var(--green),0 0 0 9999px rgba(0,0,0,.55);z-index:101;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);}
+.tut-tt{position:fixed;z-index:102;background:var(--card);border:.5px solid var(--border2);border-radius:14px;padding:16px 18px;width:280px;display:none;flex-direction:column;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.18);transition:all .3s cubic-bezier(.4,0,.2,1);}
+.tut-tt.active{display:flex;}
+.tut-tt::before{content:'';position:absolute;width:12px;height:12px;background:var(--card);border:.5px solid var(--border2);transform:rotate(45deg);}
+.tut-tt.a-top::before{top:-7px;left:28px;border-bottom:none;border-right:none;}
+.tut-tt.a-bot::before{bottom:-7px;left:28px;border-top:none;border-left:none;}
+.tut-tt.a-top-r::before{top:-7px;right:28px;border-bottom:none;border-right:none;}
+.tut-step-b{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--green);}
+.tut-dots{display:flex;gap:4px;margin-left:auto;}
+.tut-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);}
+.tut-dot.done{background:var(--green-mid);}
+.tut-dot.cur{background:var(--green);width:16px;border-radius:3px;}
+.tut-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.3;}
+.tut-desc{font-size:13px;color:var(--text2);line-height:1.55;}
+.tut-acts{display:flex;align-items:center;gap:8px;margin-top:2px;}
+.tut-next{flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;}
+.tut-skip{font-size:12px;color:var(--text3);cursor:pointer;border:none;background:transparent;padding:4px 8px;}
+.tut-modal{position:fixed;inset:0;z-index:105;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);}
+.tut-modal.active{display:flex;}
+.tut-inner{background:var(--card);border-radius:18px;padding:28px 24px;max-width:320px;width:90%;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;}
+.tut-big-ico{font-size:40px;}
+.tut-big-t{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+.tut-big-s{font-size:13px;color:var(--text2);line-height:1.55;}
+.tut-steps-list{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;}
+.tut-step-li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);}
+.tut-step-n{width:22px;height:22px;border-radius:50%;background:var(--green-light);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;}
+.tut-begin{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;}
+.tut-begin:hover{background:var(--green-deep);}
+.tut-skip-all{font-size:12px;color:var(--text3);cursor:pointer;border:none;background:transparent;}
+.tut-replay{font-size:12px;color:var(--green);cursor:pointer;border:none;background:transparent;text-decoration:underline;text-underline-offset:2px;}
+
+/* ══ GLOBAL TOAST ══ */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green-dark);color:white;font-size:13px;font-weight:600;padding:10px 20px;border-radius:30px;z-index:200;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ GLOBAL UI ══════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="d-hdr">
+    <div class="logo" style="font-size:17px;">Auto<span>Keys</span></div>
+    <button class="d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="d-profile">
+    <div class="d-av" id="drawerAv">KM</div>
+    <div class="d-info"><div class="d-name" id="drawerName">Kofi Mensah</div><div class="d-email" id="drawerEmail">kofi.mensah@gmail.com</div></div>
+    <span class="badge-green" id="drawerPlan">Free</span>
+  </div>
+  <div class="d-nav">
+    <div class="d-item active" id="dn-play" onclick="navTo('play')"><div class="d-icon">🎹</div><div class="d-lbl">Play</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-library" onclick="navTo('library')"><div class="d-icon">♪</div><div class="d-lbl">Library</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-setlist" onclick="navTo('setlist')"><div class="d-icon">📋</div><div class="d-lbl">Setlists</div><div class="d-arr">›</div></div>
+    <div class="d-div"></div>
+    <div class="d-item" id="dn-profile" onclick="navTo('profile')"><div class="d-icon">👤</div><div class="d-lbl">Profile</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-settings" onclick="navTo('settings')"><div class="d-icon">⚙</div><div class="d-lbl">Settings</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-bluetooth" onclick="navTo('bluetooth')"><div class="d-icon">📡</div><div class="d-lbl">Bluetooth</div><div class="d-arr">›</div></div>
+    <div class="d-div"></div>
+    <div class="d-item" id="dn-premium" onclick="navTo('premium')"><div class="d-icon">⭐</div><div class="d-lbl">My Plan</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-notifications" onclick="navTo('notifications')"><div class="d-icon">🔔</div><div class="d-lbl">Notifications</div><div class="d-arr">›</div></div>
+    <div class="d-item" id="dn-referral" onclick="navTo('referral')"><div class="d-icon">🎁</div><div class="d-lbl">Invite & Earn</div><div class="d-arr">›</div></div>
+  </div>
+  <div class="d-upgrade">
+    <div class="d-up-t">Unlock all 8 genres</div>
+    <div class="d-up-s">Pro: live mic, advanced chords & setlists.</div>
+    <div class="d-up-btn" onclick="navTo('premium')">Upgrade to Pro</div>
+  </div>
+</div>
+
+<!-- SAVE SHEET -->
+<div class="sheet-back" id="saveSheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Save this session?</div>
+    <div class="sh-tags" id="shTags"></div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);">Song name (optional)</label>
+      <input class="input-field" id="shName" type="text" placeholder="e.g. Amazing Grace..."/>
+    </div>
+    <div class="sh-actions">
+      <button class="sh-save" onclick="confirmSave()">Save to Library</button>
+      <button class="sh-disc" onclick="closeSheet('saveSheet')">Discard</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW SETLIST SHEET -->
+<div class="sheet-back" id="newSlSheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">New setlist</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);">Setlist name</label>
+      <input class="input-field" id="slName" type="text" placeholder="e.g. Sunday Morning Service..."/>
+    </div>
+    <div class="sec-lbl" style="margin-top:4px;">Pick songs</div>
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto;" id="slPicker"></div>
+    <div style="font-size:12px;color:var(--text3);" id="slPickCnt">0 songs selected</div>
+    <div class="sh-actions">
+      <button class="sh-save" onclick="createSetlist()">Create setlist</button>
+      <button class="sh-disc" onclick="closeSheet('newSlSheet')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-back" id="editModal" onclick="closeEditModal(event)">
+  <div class="modal-sheet">
+    <div class="m-handle"></div>
+    <div class="m-title" id="editTitle">Edit</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);" id="editLabel">Value</label>
+      <input class="input-field" id="editInput" type="text"/>
+    </div>
+    <div class="sh-actions">
+      <button class="sh-save" onclick="saveEdit()">Save changes</button>
+      <button class="sh-disc" onclick="closeSheet('editModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL ELEMENTS -->
+<div class="tut-mask" id="tutMask"></div>
+<div class="tut-spotlight" id="tutSpot"></div>
+<div class="tut-tt" id="tutTT">
+  <div style="display:flex;align-items:center;">
+    <div class="tut-step-b"><span id="tutStepLbl">Step 1 of 6</span></div>
+    <div class="tut-dots" id="tutDots"></div>
+  </div>
+  <div class="tut-title" id="tutTitle"></div>
+  <div class="tut-desc" id="tutDesc"></div>
+  <div class="tut-acts">
+    <button class="tut-next" id="tutNextBtn" onclick="nextTutStep()">Next →</button>
+    <button class="tut-skip" onclick="skipTutorial()">Skip tour</button>
+  </div>
+</div>
+<div class="tut-modal" id="tutStart">
+  <div class="tut-inner">
+    <div class="tut-big-ico">👋</div>
+    <div class="tut-big-t">Welcome to AutoKeys!</div>
+    <div class="tut-big-s">Quick 6-step tour so you're ready to play in under a minute.</div>
+    <div class="tut-steps-list">
+      <div class="tut-step-li"><div class="tut-step-n">1</div>Pick your genre</div>
+      <div class="tut-step-li"><div class="tut-step-n">2</div>See your key, BPM & mode</div>
+      <div class="tut-step-li"><div class="tut-step-n">3</div>Manual override controls</div>
+      <div class="tut-step-li"><div class="tut-step-n">4</div>Chord display & progression</div>
+      <div class="tut-step-li"><div class="tut-step-n">5</div>Live mic & piano keys</div>
+      <div class="tut-step-li"><div class="tut-step-n">6</div>Start listening & connect</div>
+    </div>
+    <button class="tut-begin" onclick="beginTutorial()">Start the tour</button>
+    <button class="tut-skip-all" onclick="skipTutorial()">Skip — I'll explore on my own</button>
+  </div>
+</div>
+<div class="tut-modal" id="tutFinish">
+  <div class="tut-inner">
+    <div class="tut-big-ico">🎹</div>
+    <div class="tut-big-t">You're ready to play!</div>
+    <div class="tut-big-s">Pick a genre, press Start listening, and AutoKeys handles the rest.</div>
+    <button class="tut-begin" onclick="endTutorial()">Let's go!</button>
+    <button class="tut-replay" onclick="replayTutorial()">Replay the tour</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREENS
+══════════════════════════════ -->
+
+<!-- SPLASH -->
+<div class="screen active" id="screen-splash">
+  <div class="splash">
+    <div class="splash-icon">🎹</div>
+    <div class="splash-logo">Auto<span>Keys</span></div>
+    <div class="splash-tag">Play the keyboard like a pro — no experience needed.</div>
+  </div>
+  <button class="btn-green" onclick="navTo('onboard-1')">Get started</button>
+  <button class="btn-outline" onclick="navTo('signin')">Already have an account</button>
+</div>
+
+<!-- ONBOARDING 1 — Role -->
+<div class="screen" id="screen-onboard-1">
+  <div class="topbar"><div style="width:32px;"></div><div style="font-size:14px;color:var(--text2);">1 of 4</div><button class="btn-outline" style="width:auto;padding:4px 12px;font-size:12px;" onclick="navTo('play')">Skip</button></div>
+  <div class="ob-progress" id="obp1"></div>
+  <div class="ob-title">What best describes you?</div>
+  <div class="ob-sub">We'll personalise AutoKeys to fit your setup.</div>
+  <div class="ob-illus">⛪</div>
+  <div class="role-grid">
+    <div class="role-card" onclick="selRole(this)"><div class="role-icon">⛪</div><div class="role-name">Church musician</div><div class="role-desc">Worship & gospel</div></div>
+    <div class="role-card" onclick="selRole(this)"><div class="role-icon">🎙️</div><div class="role-name">Studio artist</div><div class="role-desc">Recording & production</div></div>
+    <div class="role-card" onclick="selRole(this)"><div class="role-icon">🎤</div><div class="role-name">Live performer</div><div class="role-desc">Concerts & events</div></div>
+    <div class="role-card" onclick="selRole(this)"><div class="role-icon">🎓</div><div class="role-name">Just learning</div><div class="role-desc">Beginner & curious</div></div>
+  </div>
+  <button class="btn-green" onclick="navTo('onboard-2')">Continue</button>
+</div>
+
+<!-- ONBOARDING 2 — Genres -->
+<div class="screen" id="screen-onboard-2">
+  <div class="topbar"><button class="back-btn" onclick="navTo('onboard-1')">&#8592;</button><div style="font-size:14px;color:var(--text2);">2 of 4</div><button class="btn-outline" style="width:auto;padding:4px 12px;font-size:12px;" onclick="navTo('play')">Skip</button></div>
+  <div class="ob-progress" id="obp2"></div>
+  <div class="ob-title">Pick your genres</div>
+  <div class="ob-sub">Choose the styles you play most.</div>
+  <div class="card" style="padding:12px;">
+    <div class="mini-genres" id="obGenres">
+      <div class="mg-pill sel" onclick="this.classList.toggle('sel')">Worship</div>
+      <div class="mg-pill" onclick="this.classList.toggle('sel')">R&B</div>
+      <div class="mg-pill sel" onclick="this.classList.toggle('sel')">Reggae</div>
+      <div class="mg-pill" onclick="this.classList.toggle('sel')">Afrobeats</div>
+      <div class="mg-pill" onclick="this.classList.toggle('sel')">Hip-hop</div>
+      <div class="mg-pill sel" onclick="this.classList.toggle('sel')">Pop</div>
+      <div class="mg-pill" onclick="this.classList.toggle('sel')">Jazz</div>
+      <div class="mg-pill" onclick="this.classList.toggle('sel')">Classical</div>
+    </div>
+  </div>
+  <button class="btn-green" onclick="navTo('onboard-3')">Continue</button>
+</div>
+
+<!-- ONBOARDING 3 — Permissions -->
+<div class="screen" id="screen-onboard-3">
+  <div class="topbar"><button class="back-btn" onclick="navTo('onboard-2')">&#8592;</button><div style="font-size:14px;color:var(--text2);">3 of 4</div><button class="btn-outline" style="width:auto;padding:4px 12px;font-size:12px;" onclick="navTo('play')">Skip</button></div>
+  <div class="ob-progress" id="obp3"></div>
+  <div class="ob-title">Allow access</div>
+  <div class="ob-sub">AutoKeys needs two things to work its magic.</div>
+  <div class="perm-row" id="permMic" onclick="grantPerm('permMic','micSt')">
+    <div class="perm-icon-w">🎙️</div>
+    <div class="perm-t"><div class="perm-name">Microphone</div><div class="perm-desc">To listen to singers and detect key & tempo</div></div>
+    <div class="perm-st" id="micSt">Tap to allow</div>
+  </div>
+  <div class="perm-row" id="permBT" onclick="grantPerm('permBT','btSt')">
+    <div class="perm-icon-w">📡</div>
+    <div class="perm-t"><div class="perm-name">Bluetooth</div><div class="perm-desc">To send sound to speakers and PA systems</div></div>
+    <div class="perm-st" id="btSt">Tap to allow</div>
+  </div>
+  <button class="btn-green" onclick="navTo('onboard-4')">Continue</button>
+  <div style="text-align:center;font-size:12px;color:var(--text3);cursor:pointer;">Change anytime in Settings</div>
+</div>
+
+<!-- ONBOARDING 4 — All set -->
+<div class="screen" id="screen-onboard-4">
+  <div class="topbar"><button class="back-btn" onclick="navTo('onboard-3')">&#8592;</button><div style="font-size:14px;color:var(--text2);">4 of 4</div><div style="width:32px;"></div></div>
+  <div class="final-center">
+    <div class="final-circle">🎉</div>
+    <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.4px;">You're all set!</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5;">AutoKeys is ready. Here's what's waiting:</div>
+    <div class="checklist">
+      <div class="chk-item"><div class="chk-tick">✓</div>8 genre modes ready to play</div>
+      <div class="chk-item"><div class="chk-tick">✓</div>Live mic detection active</div>
+      <div class="chk-item"><div class="chk-tick">✓</div>Bluetooth speaker support on</div>
+      <div class="chk-item"><div class="chk-tick">✓</div>No keyboard experience needed</div>
+    </div>
+  </div>
+  <button class="btn-green" onclick="navTo('play');showTutorial()">Start playing</button>
+</div>
+
+<!-- SIGN IN -->
+<div class="screen" id="screen-signin">
+  <div class="topbar"><button class="back-btn" onclick="navTo('splash')">&#8592;</button><div class="logo" style="font-size:16px;">Auto<span>Keys</span></div><div style="width:32px;"></div></div>
+  <div class="signin-hero">
+    <div class="signin-icon">🎹</div>
+    <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.4px;">Welcome back</div>
+    <div style="font-size:13px;color:var(--text2);">Sign in to continue playing</div>
+  </div>
+  <div class="ret-card" onclick="quickSignIn()">
+    <div class="ret-av">KM</div>
+    <div class="ret-info"><div class="ret-name">Kofi Mensah</div><div class="ret-email">kofi.mensah@gmail.com</div></div>
+    <div style="font-size:14px;color:var(--text3);">›</div>
+  </div>
+  <div class="divider"><div class="div-line"></div><div class="div-t">or sign in with email</div><div class="div-line"></div></div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);">Email address</label>
+      <div class="input-wrap"><input class="input-field" id="siEmail" type="email" placeholder="you@example.com"/><span class="eye-btn">✉</span></div>
+      <div id="siEmailErr" style="font-size:11px;color:var(--red);display:none;">Please enter a valid email</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <label style="font-size:12px;font-weight:600;color:var(--text2);">Password</label>
+      <div class="input-wrap"><input class="input-field" id="siPass" type="password" placeholder="Your password"/><span class="eye-btn" onclick="togglePass()">👁</span></div>
+      <div id="siPassErr" style="font-size:11px;color:var(--red);display:none;">Password must be at least 8 characters</div>
+    </div>
+    <div class="forgot-link" onclick="showToast('Password reset email sent!')">Forgot password?</div>
+  </div>
+  <div class="social-row">
+    <div class="soc-btn" onclick="quickSignIn()"><span>G</span>Google</div>
+    <div class="soc-btn" onclick="quickSignIn()"><span>&#63743;</span>Apple</div>
+    <div class="soc-btn" onclick="quickSignIn()"><span>f</span>Facebook</div>
+  </div>
+  <button class="btn-green" onclick="signIn()">Sign in</button>
+  <div style="text-align:center;font-size:13px;color:var(--text3);">Don't have an account? <span style="color:var(--green);text-decoration:underline;cursor:pointer;" onclick="navTo('onboard-1')">Create one</span></div>
+</div>
+
+<!-- PLAY -->
+<div class="screen" id="screen-play">
+  <div class="topbar">
+    <div class="logo">Auto<span>Keys</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button style="font-size:12px;border:.5px solid var(--border2);border-radius:var(--radius-sm);padding:4px 10px;background:transparent;color:var(--text2);cursor:pointer;" id="langBtn" onclick="cycleLang()">EN</button>
+      <div class="hb" id="hb" onclick="toggleDrawer()"><div class="hbl"></div><div class="hbl"></div><div class="hbl"></div></div>
+    </div>
+  </div>
+  <div class="status-bar"><div class="s-dot" id="sDot"></div><span id="sText">Ready — select a genre to begin</span></div>
+  <div id="el-genres">
+    <div class="sec-lbl">Genre</div>
+    <div class="genres-grid">
+      <button class="g-btn" data-g="worship" onclick="selGenre(this)"><span class="g-icon">✝</span><span class="g-name">Worship</span></button>
+      <button class="g-btn" data-g="rnb" onclick="selGenre(this)"><span class="g-icon">♪</span><span class="g-name">R&B</span></button>
+      <button class="g-btn" data-g="reggae" onclick="selGenre(this)"><span class="g-icon">♬</span><span class="g-name">Reggae</span></button>
+      <button class="g-btn" data-g="afro" onclick="selGenre(this)"><span class="g-icon">◉</span><span class="g-name">Afrobeats</span></button>
+      <button class="g-btn" data-g="hiphop" onclick="selGenre(this)"><span class="g-icon">◈</span><span class="g-name">Hip-hop</span></button>
+      <button class="g-btn" data-g="pop" onclick="selGenre(this)"><span class="g-icon">★</span><span class="g-name">Pop</span></button>
+      <button class="g-btn" data-g="jazz" onclick="selGenre(this)"><span class="g-icon">♩</span><span class="g-name">Jazz</span></button>
+      <button class="g-btn" data-g="classical" onclick="selGenre(this)"><span class="g-icon">𝄞</span><span class="g-name">Classical</span></button>
+    </div>
+  </div>
+  <div class="stats-3" id="el-stats">
+    <div class="stat-c"><span class="stat-l">Key</span><span class="stat-v" id="pKey">—</span></div>
+    <div class="stat-c"><span class="stat-l">BPM</span><span class="stat-v" id="pBpm">—</span></div>
+    <div class="stat-c"><span class="stat-l">Mode</span><span class="stat-v" id="pMode" style="font-size:12px;padding-top:4px;">—</span></div>
+  </div>
+  <div class="override-panel" id="el-override">
+    <div class="sec-lbl" style="margin-bottom:0;">Manual override</div>
+    <div class="ov-warn" id="ovWarn">⚠ Override active — mic detection paused</div>
+    <div class="ov-row">
+      <span class="ov-lbl">Key</span>
+      <div class="key-picker" id="keyPicker"></div>
+      <button class="ov-auto" onclick="resetKey()">Auto ↺</button>
+    </div>
+    <div class="ov-div"></div>
+    <div class="ov-row">
+      <span class="ov-lbl">Tempo</span>
+      <div class="bpm-ctrl">
+        <button class="bpm-btn" onclick="changeBpm(-5)">−</button>
+        <div class="bpm-disp"><span id="bpmDisp">—</span> <span class="bpm-unit">BPM</span></div>
+        <button class="bpm-btn" onclick="changeBpm(5)">+</button>
+      </div>
+      <button class="ov-auto" onclick="resetBpm()">Auto ↺</button>
+    </div>
+  </div>
+  <div class="chord-display" id="el-chord">
+    <div class="sec-lbl">Current chord</div>
+    <div class="chord-main" id="pChord">—</div>
+    <div style="font-size:13px;color:var(--text2);margin-top:2px;" id="pChordSub">Waiting for input...</div>
+    <div class="c-pills" id="pPills"></div>
+  </div>
+  <div class="wave-wrap" id="el-mic">
+    <span class="wave-lbl">Mic</span>
+    <div class="waveform" id="waveform"></div>
+  </div>
+  <div class="piano-wrap" id="el-piano">
+    <div class="sec-lbl">Keys</div>
+    <div class="piano">
+      <div class="wk" id="wk0"><span>C</span></div><div class="wk" id="wk1"><span>D</span></div><div class="wk" id="wk2"><span>E</span></div><div class="wk" id="wk3"><span>F</span></div><div class="wk" id="wk4"><span>G</span></div><div class="wk" id="wk5"><span>A</span></div><div class="wk" id="wk6"><span>B</span></div><div class="wk" id="wk7"><span>C</span></div>
+      <div class="bks"><div class="bsp"></div><div class="bk" id="bk0"></div><div class="bsp"></div><div class="bk" id="bk1"></div><div class="bsp" style="flex:2"></div><div class="bk" id="bk2"></div><div class="bsp"></div><div class="bk" id="bk3"></div><div class="bsp"></div><div class="bk" id="bk4"></div><div class="bsp"></div></div>
+    </div>
+  </div>
+  <div class="vol-row"><span class="vol-lbl">Volume</span><input type="range" min="0" max="100" value="75" step="1" oninput="document.getElementById('pVolVal').textContent=this.value+'%'"><span class="vol-val" id="pVolVal">75%</span></div>
+  <div class="controls" id="el-controls">
+    <button class="btn-listen" id="listenBtn" onclick="toggleListen()">Start listening</button>
+    <button class="btn-sq" id="btQuickBtn" onclick="navTo('bluetooth')">📡 <span id="btQuickLbl">Connect</span></button>
+  </div>
+</div>
+
+<!-- LIBRARY -->
+<div class="screen" id="screen-library">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Library</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div class="search-wrap"><span class="search-ico">&#9906;</span><input type="text" id="libSearch" placeholder="Search songs, keys, genres..." oninput="renderLib()"/></div>
+  <div class="filter-row">
+    <div class="f-tab active" onclick="setLibFilter(this,'all')">All</div>
+    <div class="f-tab" onclick="setLibFilter(this,'worship')">Worship</div>
+    <div class="f-tab" onclick="setLibFilter(this,'rnb')">R&B</div>
+    <div class="f-tab" onclick="setLibFilter(this,'reggae')">Reggae</div>
+    <div class="f-tab" onclick="setLibFilter(this,'afro')">Afrobeats</div>
+    <div class="f-tab" onclick="setLibFilter(this,'jazz')">Jazz</div>
+    <div class="f-tab" onclick="setLibFilter(this,'starred')">⭐ Starred</div>
+  </div>
+  <div class="stats-3">
+    <div class="stat-c"><div class="stat-v" id="lTotal">6</div><div class="stat-l">Saved</div></div>
+    <div class="stat-c"><div class="stat-v" id="lGenres">5</div><div class="stat-l">Genres</div></div>
+    <div class="stat-c"><div class="stat-v" id="lStars">2</div><div class="stat-l">Starred</div></div>
+  </div>
+  <div class="sec-lbl">Saved sessions</div>
+  <div style="display:flex;flex-direction:column;gap:8px;" id="songsList"></div>
+  <button class="load-bar" id="loadBar" onclick="loadSelected()">Load into player</button>
+</div>
+
+<!-- SETLIST -->
+<div class="screen" id="screen-setlist">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Setlists</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div class="stats-3">
+    <div class="stat-c"><div class="stat-v" id="slCount">2</div><div class="stat-l">Setlists</div></div>
+    <div class="stat-c"><div class="stat-v" id="slSongs">8</div><div class="stat-l">Total songs</div></div>
+    <div class="stat-c"><div class="stat-v">Sunday</div><div class="stat-l">Next service</div></div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="sec-lbl" style="margin-bottom:0;">Your setlists</div>
+    <button class="new-sl-btn" onclick="openNewSetlist()">+ New setlist</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;" id="setlistList"></div>
+</div>
+
+<!-- BLUETOOTH -->
+<div class="screen" id="screen-bluetooth">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Bluetooth</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div class="bt-status-card">
+    <div class="bt-anim"><div class="bt-ring"></div><div class="bt-ring"></div>📡</div>
+    <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text);" id="btScanTitle">Scan for devices</div><div style="font-size:12px;color:var(--text2);margin-top:2px;" id="btScanSub">Tap scan to find nearby speakers</div></div>
+    <button class="bt-toggle scan" id="btScanBtn" onclick="toggleScan()">Scan</button>
+  </div>
+  <div class="sec-lbl" id="btDevLbl">Connected devices</div>
+  <div style="display:flex;flex-direction:column;gap:8px;" id="devList"></div>
+  <div class="sec-lbl">Output volume</div>
+  <div class="vol-row"><span class="vol-lbl">Speaker</span><input type="range" min="0" max="100" value="80" step="1" oninput="document.getElementById('btVolV').textContent=this.value+'%'"><span class="vol-val" id="btVolV">80%</span></div>
+  <div style="background:#f0f0ee;border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+    <div class="bt-tip"><div class="bt-tip-dot"></div>Make sure your speaker is in pairing mode before scanning</div>
+    <div class="bt-tip"><div class="bt-tip-dot"></div>Keep your phone within 10 metres for best results</div>
+    <div class="bt-tip"><div class="bt-tip-dot"></div>Connect up to 3 devices at once on the Pro plan</div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Profile</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div class="av-section">
+    <div class="av-wrap" onclick="showToast('Photo upload coming soon')">
+      <div class="av" id="profileAv">KM</div>
+      <div class="av-edit">✎</div>
+    </div>
+    <div class="av-name" id="profileName">Kofi Mensah</div>
+    <div class="av-role" id="profileRole">Church musician</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="badge-green">Free plan</span>
+      <span style="font-size:12px;color:var(--green);text-decoration:underline;cursor:pointer;" onclick="navTo('premium')">Upgrade to Pro →</span>
+    </div>
+  </div>
+  <div class="stats-3">
+    <div class="stat-c" style="text-align:center;align-items:center;"><div class="stat-v">14</div><div class="stat-l">Sessions</div></div>
+    <div class="stat-c" style="text-align:center;align-items:center;"><div class="stat-v">6</div><div class="stat-l">Saved</div></div>
+    <div class="stat-c" style="text-align:center;align-items:center;"><div class="stat-v">3</div><div class="stat-l">Genres</div></div>
+  </div>
+  <div class="sec-lbl">Personal info</div>
+  <div class="info-group">
+    <div class="info-row" onclick="openEdit('name','Full name','Kofi Mensah')"><div class="info-ico">👤</div><div style="flex:1;"><div class="info-lbl">Full name</div><div class="info-val" id="iName">Kofi Mensah</div></div><div style="font-size:12px;color:var(--text3);">Edit ›</div></div>
+    <div class="info-row" onclick="openEdit('email','Email address','kofi.mensah@gmail.com')"><div class="info-ico">✉</div><div style="flex:1;"><div class="info-lbl">Email</div><div class="info-val" id="iEmail">kofi.mensah@gmail.com</div></div><div style="font-size:12px;color:var(--text3);">Edit ›</div></div>
+    <div class="info-row" onclick="openEdit('role','Your role','Church musician')"><div class="info-ico">🎹</div><div style="flex:1;"><div class="info-lbl">Role</div><div class="info-val" id="iRole">Church musician</div></div><div style="font-size:12px;color:var(--text3);">Edit ›</div></div>
+    <div class="info-row" onclick="openEdit('location','Location','Accra, Ghana')"><div class="info-ico">📍</div><div style="flex:1;"><div class="info-lbl">Location</div><div class="info-val" id="iLoc">Accra, Ghana</div></div><div style="font-size:12px;color:var(--text3);">Edit ›</div></div>
+  </div>
+  <div class="sec-lbl">Recent activity</div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="act-item"><div class="act-ico">🎹</div><div class="act-txt">Played <strong>Amazing Grace</strong> in Key of G</div><div class="act-time">Today</div></div>
+    <div class="act-item"><div class="act-ico">💾</div><div class="act-txt">Saved <strong>Sunday Opener</strong> to library</div><div class="act-time">Today</div></div>
+    <div class="act-item"><div class="act-ico">📡</div><div class="act-txt">Connected to <strong>Church PA System</strong></div><div class="act-time">Yesterday</div></div>
+  </div>
+  <div class="sec-lbl">Account</div>
+  <div class="info-group">
+    <div class="danger-row" onclick="showToast('Signing you out...')"><div class="info-ico">🚪</div><div class="danger-lbl">Sign out</div></div>
+    <div class="danger-row" onclick="showToast('Confirmation email sent')"><div class="info-ico">🗑</div><div class="danger-lbl">Delete account</div></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="screen-settings">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Settings</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div style="display:flex;align-items:center;gap:12px;background:var(--card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;">
+    <div class="d-av">KM</div><div style="flex:1;"><div style="font-size:15px;font-weight:600;color:var(--text);">Kofi Mensah</div><div style="font-size:12px;color:var(--text3);">kofi.mensah@gmail.com</div></div><span class="badge-green">Free plan</span>
+  </div>
+  <div class="upgrade-card"><div style="flex:1;"><div class="up-t">Unlock all genres & features</div><div class="up-s">Advanced chords, unlimited sessions & more</div></div><button class="up-btn" onclick="navTo('premium')">Upgrade</button></div>
+  <div class="sec-lbl">Sound</div>
+  <div class="set-group">
+    <div class="set-row"><div class="set-ico si-teal">🎹</div><div style="flex:1;"><div class="set-nm">Instrument</div><div class="set-ds">What the keys sound like</div></div><select class="sel-pill"><option>Grand Piano</option><option>Electric Piano</option><option>Organ</option><option>Synth Pad</option></select></div>
+    <div class="set-row"><div class="set-ico si-blue">🎵</div><div style="flex:1;"><div class="set-nm">Chord complexity</div><div class="set-ds">Simple or rich voicings</div></div><select class="sel-pill"><option>Basic</option><option>Intermediate</option><option selected>Advanced</option></select></div>
+    <div class="set-row"><div class="set-ico si-teal">🎙️</div><div style="flex:1;"><div class="set-nm">Mic sensitivity</div><div class="set-ds">How well it hears singers</div></div><select class="sel-pill"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+  </div>
+  <div class="sec-lbl">Bluetooth</div>
+  <div class="set-group">
+    <div class="set-row"><div class="set-ico si-blue">📡</div><div style="flex:1;"><div class="set-nm">Auto-connect speaker</div><div class="set-ds">Reconnect to last device</div></div><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+  </div>
+  <div class="sec-lbl">App</div>
+  <div class="set-group">
+    <div class="set-row"><div class="set-ico si-purple">🌍</div><div style="flex:1;"><div class="set-nm">Language</div></div><select class="sel-pill"><option>English</option><option>French</option><option>Spanish</option><option>Twi</option></select></div>
+    <div class="set-row"><div class="set-ico si-gray">🌙</div><div style="flex:1;"><div class="set-nm">Dark mode</div></div><button class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+    <div class="set-row"><div class="set-ico si-amber">🔔</div><div style="flex:1;"><div class="set-nm">Notifications</div></div><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+  </div>
+  <div class="sec-lbl">Support</div>
+  <div class="set-group">
+    <div class="set-row"><div class="set-ico si-blue">❓</div><div style="flex:1;"><div class="set-nm">Help & FAQ</div></div><div style="font-size:12px;color:var(--text3);">›</div></div>
+    <div class="set-row"><div class="set-ico si-coral">✉️</div><div style="flex:1;"><div class="set-nm">Contact support</div></div><div style="font-size:12px;color:var(--text3);">›</div></div>
+  </div>
+  <div class="info-group">
+    <div class="danger-row" onclick="showToast('Signing you out...')"><div class="info-ico">🚪</div><div class="danger-lbl">Sign out</div></div>
+  </div>
+  <div style="text-align:center;font-size:11px;color:var(--text3);">AutoKeys v1.0.0</div>
+</div>
+
+<!-- PREMIUM -->
+<div class="screen" id="screen-premium">
+  <div class="topbar"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="logo" style="font-size:16px;">Auto<span>Keys</span></div><div style="width:32px;"></div></div>
+  <div class="prem-hero">
+    <div class="prem-icon">🎹</div>
+    <div class="prem-title">Go Premium</div>
+    <div class="prem-sub">Professional sound for churches, studios & live performances.</div>
+    <div class="bill-toggle">
+      <button class="bill-opt active" id="billM" onclick="setBill('monthly')">Monthly</button>
+      <button class="bill-opt" id="billY" onclick="setBill('yearly')">Yearly <span class="save-b">Save 40%</span></button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div class="plan-card" id="planFree" onclick="selPlan('planFree')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div><div class="plan-nm">Free</div><div class="plan-tg">Get started, no cost</div></div>
+        <div style="text-align:right;"><div class="plan-pr">$0</div><div class="plan-pd">forever</div><div class="sel-ind" style="margin:4px 0 0 auto;"><div class="sel-dot"></div></div></div>
+      </div>
+      <div class="feat-row"><div class="feat-chk">✓</div>3 genres</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Basic chords</div>
+      <div class="feat-row"><div class="feat-chk lock">🔒</div><span style="color:var(--text3)">Live mic locked</span></div>
+    </div>
+    <div class="plan-card pop sel" id="planPro" onclick="selPlan('planPro')">
+      <div class="pop-tag">Most popular</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div><div class="plan-nm">Pro</div><div class="plan-tg">For serious musicians</div></div>
+        <div style="text-align:right;"><div class="plan-pr" id="proPr">$9.99</div><div class="plan-pd" id="proPd">per month</div><div class="plan-ws" id="proWs" style="display:none;"></div><div class="sel-ind" style="margin:4px 0 0 auto;"><div class="sel-dot"></div></div></div>
+      </div>
+      <div class="feat-row"><div class="feat-chk">✓</div>All 8 genres</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Live mic detection</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Advanced chords</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Multi-speaker Bluetooth</div>
+    </div>
+    <div class="plan-card" id="planChurch" onclick="selPlan('planChurch')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div><div class="plan-nm">Church / Studio</div><div class="plan-tg">For teams & institutions</div></div>
+        <div style="text-align:right;"><div class="plan-pr" id="churchPr">$24.99</div><div class="plan-pd" id="churchPd">per month</div><div class="plan-ws" id="churchWs" style="display:none;"></div><div class="sel-ind" style="margin:4px 0 0 auto;"><div class="sel-dot"></div></div></div>
+      </div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Everything in Pro</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Up to 10 team members</div>
+      <div class="feat-row"><div class="feat-chk">✓</div>Admin dashboard</div>
+    </div>
+  </div>
+  <div class="comp-link">Compare all plans in detail</div>
+  <button class="btn-green" id="premCTA" onclick="purchase()">Start 7-day free trial</button>
+  <div class="trust-row">
+    <div class="trust-item">🔒 Secure</div>
+    <div class="trust-item">↩ Cancel anytime</div>
+    <div class="trust-item">✓ No hidden fees</div>
+  </div>
+  <div class="restore-link" onclick="showToast('Restoring purchase...')">Restore previous purchase</div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="screen" id="screen-notifications">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Notifications</div></div><button style="font-size:12px;color:var(--green);cursor:pointer;border:none;background:transparent;" onclick="markAllRead()">Mark all read</button></div>
+  <div class="stats-3">
+    <div class="stat-c" style="background:var(--green-light);border:.5px solid var(--green-mid);"><div class="stat-v" id="unreadCnt" style="color:var(--green-dark);">5</div><div class="stat-l" style="color:var(--green);">Unread</div></div>
+    <div class="stat-c"><div class="stat-v" id="totalNCnt">9</div><div class="stat-l">Total</div></div>
+    <div class="stat-c"><div class="stat-v" id="alertNCnt">2</div><div class="stat-l">Alerts</div></div>
+  </div>
+  <div class="filter-row">
+    <div class="f-tab active" onclick="setNFilter(this,'all')">All</div>
+    <div class="f-tab" onclick="setNFilter(this,'alerts')">Alerts</div>
+    <div class="f-tab" onclick="setNFilter(this,'updates')">Updates</div>
+    <div class="f-tab" onclick="setNFilter(this,'tips')">Tips</div>
+    <div class="f-tab" onclick="setNFilter(this,'billing')">Billing</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;" id="notifList"></div>
+  <div style="display:none;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:40px 20px;" id="notifEmpty">
+    <div style="font-size:36px;">🔔</div>
+    <div style="font-size:15px;font-weight:600;color:var(--text);">All caught up!</div>
+    <div style="font-size:13px;color:var(--text2);">No notifications in this category.</div>
+  </div>
+  <div class="sec-lbl" style="margin-top:8px;">Notification preferences</div>
+  <div class="info-group">
+    <div class="pref-row"><div class="pref-ico">💳</div><div style="flex:1;"><div class="pref-nm">Billing & subscription</div><div class="pref-ds">Renewal reminders, payment alerts</div></div><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+    <div class="pref-row"><div class="pref-ico">✨</div><div style="flex:1;"><div class="pref-nm">New features</div><div class="pref-ds">Product updates & releases</div></div><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+    <div class="pref-row"><div class="pref-ico">🎹</div><div style="flex:1;"><div class="pref-nm">Playing tips</div><div class="pref-ds">Genre tips & technique guides</div></div><button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+    <div class="pref-row"><div class="pref-ico">📋</div><div style="flex:1;"><div class="pref-nm">Setlist reminders</div><div class="pref-ds">Remind me before a service</div></div><button class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button></div>
+  </div>
+</div>
+
+<!-- REFERRAL -->
+<div class="screen" id="screen-referral">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="navTo('play')">&#8592;</button><div class="page-title">Invite & Earn</div></div><div class="logo-sm">Auto<span>Keys</span></div></div>
+  <div class="ref-hero">
+    <div style="font-size:38px;">🎹</div>
+    <div class="ref-title">Invite your choir director,<br>earn free Pro months</div>
+    <div class="ref-sub">For every person who joins and subscribes, you both get 1 month of Pro free.</div>
+    <div class="rew-row">
+      <div class="rew-pill">🎁 You get 1 month free</div>
+      <div class="rew-pill">🤝 They get 1 month free</div>
+    </div>
+  </div>
+  <div class="stats-3">
+    <div class="stat-c" style="background:var(--green-light);border:.5px solid var(--green-mid);text-align:center;align-items:center;"><div class="stat-v" style="color:var(--green-dark);" id="refInv">3</div><div class="stat-l" style="color:var(--green);">Invited</div></div>
+    <div class="stat-c" style="background:var(--green-light);border:.5px solid var(--green-mid);text-align:center;align-items:center;"><div class="stat-v" style="color:var(--green-dark);" id="refJoin">2</div><div class="stat-l" style="color:var(--green);">Joined</div></div>
+    <div class="stat-c" style="background:var(--green-light);border:.5px solid var(--green-mid);text-align:center;align-items:center;"><div class="stat-v" style="color:var(--green-dark);" id="refEarn">2</div><div class="stat-l" style="color:var(--green);">Months earned</div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-hdr"><div class="prog-t">Next reward — 3 months free</div><span class="badge-green" id="refProgB">2 / 5 joined</span></div>
+    <div class="prog-bg"><div class="prog-fill" style="width:40%;"></div></div>
+    <div class="prog-lbls"><span>0 referrals</span><span>3 more to unlock</span><span>5 referrals</span></div>
+  </div>
+  <div class="sec-lbl">Your invite link</div>
+  <div class="link-box"><div class="link-txt">autokeys.app/invite/kofi-km42</div><button class="copy-btn" id="copyBtn" onclick="copyLink()">Copy</button></div>
+  <div class="sec-lbl">Share via</div>
+  <div class="share-grid">
+    <div class="sh-btn" onclick="showToast('Opening WhatsApp...')"><div class="shi" style="background:var(--green-light);">💬</div><div><div class="sh-nm">WhatsApp</div><div class="sh-ds">Send to contacts</div></div></div>
+    <div class="sh-btn" onclick="showToast('Opening Messages...')"><div class="shi" style="background:var(--blue-light);">📱</div><div><div class="sh-nm">SMS</div><div class="sh-ds">Text your musicians</div></div></div>
+    <div class="sh-btn" onclick="showToast('Opening email...')"><div class="shi" style="background:var(--amber-light);">✉️</div><div><div class="sh-nm">Email</div><div class="sh-ds">Send an invitation</div></div></div>
+    <div class="sh-btn" onclick="showToast('Opening share sheet...')"><div class="shi" style="background:#f0f0ee;">⋯</div><div><div class="sh-nm">More</div><div class="sh-ds">All share options</div></div></div>
+  </div>
+  <div class="sec-lbl">Invite by email</div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="email-row"><input class="input-field" id="refEmail" type="email" placeholder="Enter email address..." style="flex:1;" onkeydown="if(event.key==='Enter')addRefEmail()"/><button class="sh-save" style="padding:11px 16px;white-space:nowrap;" onclick="addRefEmail()">Add</button></div>
+    <div class="email-tags" id="refEmailTags"></div>
+    <button class="bulk-btn" id="bulkBtn" onclick="sendBulk()">Send invites</button>
+  </div>
+  <div class="sec-lbl">People you invited</div>
+  <div style="display:flex;flex-direction:column;gap:8px;" id="invList"></div>
+  <div class="sec-lbl">How it works</div>
+  <div style="display:flex;flex-direction:column;">
+    <div class="how-step"><div class="hs-c hs1">1</div><div style="padding-top:4px;"><div class="hs-t">Share your link</div><div class="hs-d">Send your unique invite link to choir directors, musicians or anyone who plays in a group.</div></div></div>
+    <div class="how-step"><div class="hs-c hs2">2</div><div style="padding-top:4px;"><div class="hs-t">They sign up</div><div class="hs-d">Your friend creates a free AutoKeys account using your link.</div></div></div>
+    <div class="how-step"><div class="hs-c hs3">3</div><div style="padding-top:4px;"><div class="hs-t">They subscribe to Pro</div><div class="hs-d">When they upgrade to any paid plan, the reward triggers for both of you.</div></div></div>
+    <div class="how-step"><div class="hs-c hs4">4</div><div style="padding-top:4px;"><div class="hs-t">You both get 1 month free</div><div class="hs-d">Your Pro plan is extended automatically. No vouchers, no hassle.</div></div></div>
+  </div>
+  <div style="text-align:center;font-size:11px;color:var(--text3);line-height:1.5;">Rewards apply when your friend subscribes to a paid plan. <span style="color:var(--green);cursor:pointer;text-decoration:underline;">See full terms →</span></div>
+</div>
+
+<!-- ══════════════════════════════
+     JAVASCRIPT
+══════════════════════════════ -->
+<script>
+// ── DATA ──
+const GENRES={
+  worship:{key:'G',bpm:72,mode:'Major',chords:['G','C','Em','D'],sub:'Slow, reverent feel',wkeys:[[4,6,1],[0,3,5],[2,6,4],[1,4,6]]},
+  rnb:{key:'Ab',bpm:88,mode:'Minor',chords:['Abm','Db','Eb','Gb'],sub:'Smooth, soulful groove',wkeys:[[5,0,3],[1,3,6],[2,4,0],[3,5,1]]},
+  reggae:{key:'C',bpm:80,mode:'Major',chords:['C','F','Am','G'],sub:'Skank rhythm, offbeat',wkeys:[[0,2,4],[3,5,0],[5,0,2],[4,6,1]]},
+  afro:{key:'F',bpm:102,mode:'Major',chords:['F','Bb','C','Dm'],sub:'Upbeat Afrobeat feel',wkeys:[[3,5,0],[6,1,3],[0,2,4],[1,3,5]]},
+  hiphop:{key:'Dm',bpm:95,mode:'Minor',chords:['Dm','Am','C','Bb'],sub:'Trap-influenced voicing',wkeys:[[1,3,5],[5,0,2],[0,2,4],[6,1,3]]},
+  pop:{key:'D',bpm:120,mode:'Major',chords:['D','Bm','G','A'],sub:'Bright pop feel',wkeys:[[1,4,6],[6,1,4],[4,6,1],[5,0,2]]},
+  jazz:{key:'Eb',bpm:110,mode:'Dorian',chords:['Ebmaj7','Cm7','Fm7','Bb7'],sub:'Jazz voicing, 7ths',wkeys:[[2,4,6,1],[0,2,4,6],[3,5,0,2],[6,1,3,5]]},
+  classical:{key:'C',bpm:60,mode:'Major',chords:['C','G','Am','F'],sub:'Alberti bass pattern',wkeys:[[0,2,4],[4,6,1],[5,0,2],[3,5,0]]}
+};
+const KEYS=['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+let songs=[
+  {id:1,name:'Amazing Grace',genre:'worship',icon:'✝',key:'G',bpm:72,mode:'Major',chords:['G','C','Em','D'],wkeys:[[4,6,1],[0,3,5],[2,6,4],[1,4,6]],date:'Today',starred:true},
+  {id:2,name:'Sunday Opener',genre:'worship',icon:'✝',key:'G',bpm:76,mode:'Major',chords:['G','C','Em','D'],wkeys:[[4,6,1],[0,3,5],[2,6,4],[1,4,6]],date:'Today',starred:true},
+  {id:3,name:'Afro Vibe Set',genre:'afro',icon:'◉',key:'F',bpm:102,mode:'Major',chords:['F','Bb','C','Dm'],wkeys:[[3,5,0],[6,1,3],[0,2,4],[1,3,5]],date:'Yesterday',starred:false},
+  {id:4,name:'Late Night R&B',genre:'rnb',icon:'♪',key:'Ab',bpm:88,mode:'Minor',chords:['Abm','Db','Eb','Gb'],wkeys:[[5,0,3],[1,3,6],[2,4,0],[3,5,1]],date:'2 days ago',starred:false},
+  {id:5,name:'Jazz Session 1',genre:'jazz',icon:'♩',key:'Eb',bpm:110,mode:'Dorian',chords:['Ebmaj7','Cm7','Fm7','Bb7'],wkeys:[[2,4,6,1],[0,2,4,6],[3,5,0,2],[6,1,3,5]],date:'3 days ago',starred:false},
+  {id:6,name:'Reggae Riddim',genre:'reggae',icon:'♬',key:'C',bpm:80,mode:'Major',chords:['C','F','Am','G'],wkeys:[[0,2,4],[3,5,0],[5,0,2],[4,6,1]],date:'Last week',starred:false},
+];
+let setlists=[
+  {id:1,name:'Sunday Morning Service',icon:'⛪',date:'This Sunday',songs:[1,2,3],open:false},
+  {id:2,name:'Friday Night Worship',icon:'🌙',date:'Next Friday',songs:[1,4,5],open:false},
+];
+let devices=[
+  {id:'pa',name:'Church PA System',type:'PA System',icon:'🔊',signal:'●●●',connected:true},
+  {id:'mon',name:'Studio Monitor L',type:'Studio monitor',icon:'🎚',signal:'●●○',connected:false},
+  {id:'jbl',name:'JBL PartyBox 310',type:'Bluetooth speaker',icon:'📦',signal:'●○○',connected:false},
+];
+let notifications=[
+  {id:1,type:'billing',read:false,dc:'a',ico:'💳',ibg:'ni-a',title:'Subscription renewing in 3 days',desc:"Your Pro plan renews on 21 March 2026 for $9.99. Make sure your payment is up to date.",time:'Today · 9:14 AM',cta:[{l:'Manage plan',s:'a'},{l:'Dismiss',s:'sec'}]},
+  {id:2,type:'updates',read:false,dc:'',ico:'✨',ibg:'ni-g',title:'New: Classical & Jazz advanced voicings',desc:"We've upgraded chord voicings for Classical and Jazz genres. They now sound much richer.",time:'Today · 7:00 AM',cta:[{l:'Try it now',s:'g'},{l:'Later',s:'sec'}]},
+  {id:3,type:'alerts',read:false,dc:'r',ico:'⚠️',ibg:'ni-r',title:'Payment failed — action required',desc:"We couldn't charge your card. Please update your payment method to keep Pro access.",time:'Yesterday · 11:30 PM',cta:[{l:'Update payment',s:'r'},{l:'Dismiss',s:'sec'}]},
+  {id:4,type:'tips',read:false,dc:'b',ico:'🎹',ibg:'ni-b',title:'Tip: Try Afrobeats this Sunday',desc:"Churches using Afrobeats genre report increased congregation engagement.",time:'Yesterday · 8:00 AM',cta:[{l:'Open player',s:'b'}]},
+  {id:5,type:'updates',read:false,dc:'',ico:'📡',ibg:'ni-g',title:'Bluetooth now supports 3 devices',desc:"Pro users can now connect up to 3 Bluetooth speakers simultaneously.",time:'2 days ago',cta:[]},
+  {id:6,type:'billing',read:true,dc:null,ico:'✅',ibg:'ni-g',title:'Payment successful — Pro active',desc:"Your Pro subscription has been renewed. Enjoy all features until March 2027.",time:'1 month ago',cta:[]},
+  {id:7,type:'tips',read:true,dc:null,ico:'🎵',ibg:'ni-p',title:'Did you know? You can save setlists',desc:"Build a setlist before Sunday and load songs in order with one tap.",time:'1 month ago',cta:[]},
+  {id:8,type:'updates',read:true,dc:null,ico:'🌍',ibg:'ni-b',title:'AutoKeys now in French & Spanish',desc:"The app now fully supports French and Spanish. Switch in Settings.",time:'2 months ago',cta:[]},
+];
+let invited=[
+  {name:'Pastor Emmanuel',email:'emmanuel@gracechurch.org',av:'PE',bg:'#E1F5EE',tc:'#085041',status:'joined',reward:true},
+  {name:'Sister Abena',email:'abena.music@gmail.com',av:'SA',bg:'#E6F1FB',tc:'#185FA5',status:'joined',reward:false},
+  {name:'Kwame Darko',email:'kwame.d@studio.com',av:'KD',bg:'#FAEEDA',tc:'#633806',status:'pending',reward:false},
+];
+
+// ── STATE ──
+let currGenre=null,isListening=false,chordIdx=0,chordTimer=null,waveTimer=null;
+let manualKey=null,manualBpm=null,autoKey=null,autoBpm=null;
+let libFilter='all',libSelected=null,slPickedIds=[],btScanning=false;
+let nFilter='all',tutStep=0,pendingEmails=[];
+const langs=['EN','FR','ES','TW'];let langIdx=0;
+
+// ── ROUTER ──
+function navTo(s){
+  closeDrawer();
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  const sc=document.getElementById('screen-'+s);
+  if(sc)sc.classList.add('active');
+  document.querySelectorAll('.d-item').forEach(el=>el.classList.remove('active'));
+  const dn=document.getElementById('dn-'+s);if(dn)dn.classList.add('active');
+  if(s==='library')renderLib();
+  if(s==='setlist')renderSetlists();
+  if(s==='bluetooth')renderDevices();
+  if(s==='notifications')renderNotifs();
+  if(s==='referral')renderInvited();
+  window.scrollTo(0,0);
+}
+
+// ── DRAWER ──
+function toggleDrawer(){const o=document.getElementById('drawer').classList.toggle('open');document.getElementById('dOverlay').classList.toggle('open',o);document.getElementById('hb').classList.toggle('open',o);}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('dOverlay').classList.remove('open');const hb=document.getElementById('hb');if(hb)hb.classList.remove('open');}
+
+// ── SHARED ──
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function cycleLang(){langIdx=(langIdx+1)%langs.length;document.getElementById('langBtn').textContent=langs[langIdx];}
+
+// ── ONBOARDING ──
+function buildObDots(screen,total,current){
+  const el=document.getElementById('obp'+screen);if(!el)return;el.innerHTML='';
+  for(let i=0;i<total;i++){const d=document.createElement('div');d.className='ob-dot'+(i<current-1?' done':i===current-1?' active':'');el.appendChild(d);}
+}
+document.addEventListener('DOMContentLoaded',function(){buildObDots(1,4,1);buildObDots(2,4,2);buildObDots(3,4,3);});
+function selRole(c){document.querySelectorAll('.role-card').forEach(r=>r.classList.remove('sel'));c.classList.add('sel');}
+function grantPerm(rowId,stId){document.getElementById(rowId).classList.add('granted');document.getElementById(stId).textContent='Allowed';}
+
+// ── SIGN IN ──
+let passVis=false;
+function togglePass(){passVis=!passVis;const i=document.getElementById('siPass');i.type=passVis?'text':'password';}
+function signIn(){
+  const e=document.getElementById('siEmail').value.trim();const p=document.getElementById('siPass').value.trim();
+  let ok=true;
+  if(!e||!e.includes('@')){document.getElementById('siEmailErr').style.display='block';ok=false;}else document.getElementById('siEmailErr').style.display='none';
+  if(p.length<8){document.getElementById('siPassErr').style.display='block';ok=false;}else document.getElementById('siPassErr').style.display='none';
+  if(!ok)return;
+  navTo('play');showTutorial();
+}
+function quickSignIn(){navTo('play');showTutorial();}
+
+// ── PLAY ──
+function buildKeyPicker(){
+  const kp=document.getElementById('keyPicker');kp.innerHTML='';
+  KEYS.forEach(k=>{const p=document.createElement('span');p.className='k-pill'+(manualKey===k?' active':'');p.textContent=k;p.onclick=()=>setManualKey(k);kp.appendChild(p);});
+}
+function setManualKey(k){manualKey=manualKey===k?null:k;buildKeyPicker();updateOvWarn();if(manualKey){document.getElementById('pKey').textContent=manualKey;showToast('Key set to '+manualKey);}else if(autoKey)document.getElementById('pKey').textContent=autoKey;}
+function resetKey(){manualKey=null;buildKeyPicker();updateOvWarn();if(autoKey)document.getElementById('pKey').textContent=autoKey;showToast('Key reset to auto');}
+function changeBpm(d){const b=manualBpm||autoBpm||120;manualBpm=Math.max(40,Math.min(200,b+d));document.getElementById('bpmDisp').textContent=manualBpm;document.getElementById('pBpm').textContent=manualBpm;updateOvWarn();if(isListening){clearInterval(chordTimer);const iv=Math.round((60000/manualBpm)*2);chordTimer=setInterval(()=>{chordIdx=(chordIdx+1)%GENRES[currGenre].chords.length;playChord(chordIdx);},iv);}}
+function resetBpm(){manualBpm=null;updateOvWarn();if(autoBpm){document.getElementById('bpmDisp').textContent=autoBpm;document.getElementById('pBpm').textContent=autoBpm;}showToast('Tempo reset to auto');}
+function updateOvWarn(){document.getElementById('ovWarn').classList.toggle('show',!!(manualKey||manualBpm));}
+
+function selGenre(btn){
+  document.querySelectorAll('.g-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currGenre=btn.dataset.g;
+  const g=GENRES[currGenre];autoKey=g.key;autoBpm=g.bpm;
+  document.getElementById('pKey').textContent=manualKey||g.key;
+  document.getElementById('pBpm').textContent=manualBpm||g.bpm;
+  document.getElementById('bpmDisp').textContent=manualBpm||g.bpm;
+  document.getElementById('pMode').textContent=g.mode;
+  document.getElementById('pChordSub').textContent=g.sub;
+  buildPills(g.chords);
+  if(!isListening){document.getElementById('sText').textContent='Genre selected — press Start listening';document.getElementById('sDot').className='s-dot';lightWKeys(g.wkeys[0]);}
+}
+function buildPills(chords){const el=document.getElementById('pPills');el.innerHTML='';chords.forEach((c,i)=>{const p=document.createElement('div');p.className='c-pill'+(i===0?' active':'');p.id='pp'+i;p.textContent=c;el.appendChild(p);});}
+function toggleListen(){
+  if(!currGenre){document.getElementById('sText').textContent='Please select a genre first';return;}
+  isListening=!isListening;
+  const btn=document.getElementById('listenBtn');const dot=document.getElementById('sDot');
+  if(isListening){btn.textContent='Stop listening';btn.classList.add('stop');dot.className='s-dot on';document.getElementById('sText').textContent='Listening... detecting key & tempo';startPlay();startWave();}
+  else{btn.textContent='Start listening';btn.classList.remove('stop');dot.className='s-dot';document.getElementById('sText').textContent='Ready — select a genre to begin';stopPlay();stopWave();setTimeout(()=>showSaveSheet(),400);}
+}
+function startPlay(){const g=GENRES[currGenre];chordIdx=0;const bpm=manualBpm||g.bpm;const iv=Math.round((60000/bpm)*2);playChord(0);chordTimer=setInterval(()=>{chordIdx=(chordIdx+1)%g.chords.length;playChord(chordIdx);},iv);}
+function stopPlay(){clearInterval(chordTimer);clearWKeys();document.querySelectorAll('.c-pill').forEach(p=>p.classList.remove('active'));document.getElementById('pChord').textContent='—';}
+function playChord(idx){const g=GENRES[currGenre];const c=g.chords[idx];const cm=document.getElementById('pChord');cm.textContent=c;cm.classList.remove('flash');void cm.offsetWidth;cm.classList.add('flash');setTimeout(()=>cm.classList.remove('flash'),300);document.querySelectorAll('.c-pill').forEach((p,i)=>p.classList.toggle('active',i===idx));lightWKeys(g.wkeys[idx]);}
+function lightWKeys(keys){clearWKeys();if(!keys)return;keys.forEach(k=>{const el=document.getElementById('wk'+k);if(el){el.classList.add('lit','glow');setTimeout(()=>el.classList.remove('glow'),400);}});}
+function clearWKeys(){for(let i=0;i<8;i++){const e=document.getElementById('wk'+i);if(e)e.classList.remove('lit','glow');}for(let i=0;i<5;i++){const e=document.getElementById('bk'+i);if(e)e.classList.remove('lit');}}
+function startWave(){const bars=document.querySelectorAll('.wb');let beat=0;const bm=Math.round(60000/(manualBpm||GENRES[currGenre].bpm));waveTimer=setInterval(()=>{beat++;const ib=beat%2===0;bars.forEach((b,i)=>{const c=Math.abs(i-13.5)/13.5;const h=Math.round(((ib?18:6)+Math.random()*14)*(1-c*.5));b.style.height=Math.max(3,h)+'px';b.classList.remove('hot','warm');if(h>22)b.classList.add('hot');else if(h>14)b.classList.add('warm');});},Math.round(bm/4));}
+function stopWave(){clearInterval(waveTimer);document.querySelectorAll('.wb').forEach(b=>{b.style.height='4px';b.classList.remove('hot','warm');});}
+document.addEventListener('DOMContentLoaded',function(){const wf=document.getElementById('waveform');if(wf){for(let i=0;i<28;i++){const b=document.createElement('div');b.className='wb';b.style.height='4px';wf.appendChild(b);}}});
+
+// SAVE SHEET
+function showSaveSheet(){if(!currGenre)return;const g=GENRES[currGenre];const gl=currGenre.charAt(0).toUpperCase()+currGenre.slice(1);const key=manualKey||g.key;const bpm=manualBpm||g.bpm;const tags=document.getElementById('shTags');tags.innerHTML='';[{l:gl},{l:'Key: '+key},{l:bpm+' BPM'},{l:g.mode}].forEach(tag=>{const e=document.createElement('div');e.className='sh-tag';e.textContent=tag.l;tags.appendChild(e);});document.getElementById('shName').value='';document.getElementById('saveSheet').classList.add('open');}
+function confirmSave(){const name=document.getElementById('shName').value.trim();const g=GENRES[currGenre];const gl=currGenre.charAt(0).toUpperCase()+currGenre.slice(1);const key=manualKey||g.key;const bpm=manualBpm||g.bpm;const savedName=name||(gl+' — Key of '+key);const iconMap={worship:'✝',rnb:'♪',reggae:'♬',afro:'◉',hiphop:'◈',pop:'★',jazz:'♩',classical:'𝄞'};songs.unshift({id:Date.now(),name:savedName,genre:currGenre,icon:iconMap[currGenre]||'♪',key,bpm,mode:g.mode,chords:g.chords,wkeys:g.wkeys,date:'Just now',starred:false});closeSheet('saveSheet');showToast('"'+savedName+'" saved to Library');}
+
+// ── LIBRARY ──
+function setLibFilter(tab,f){document.querySelectorAll('#screen-library .f-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');libFilter=f;libSelected=null;renderLib();}
+function renderLib(){
+  let q=(document.getElementById('libSearch').value||'').toLowerCase();
+  let list=[...songs];
+  if(libFilter==='starred')list=list.filter(s=>s.starred);
+  else if(libFilter!=='all')list=list.filter(s=>s.genre===libFilter);
+  if(q)list=list.filter(s=>s.name.toLowerCase().includes(q)||s.key.toLowerCase().includes(q)||s.genre.toLowerCase().includes(q));
+  const c=document.getElementById('songsList');c.innerHTML='';
+  list.forEach(song=>{
+    const card=document.createElement('div');card.className='song-card'+(libSelected===song.id?' sel':'');
+    card.onclick=()=>{libSelected=libSelected===song.id?null:song.id;renderLib();};
+    card.innerHTML=`<div class="s-ico">${song.icon}</div><div style="flex:1;min-width:0;"><div class="s-nm">${song.name}</div><div class="s-mt"><span>${song.genre}</span><span class="mdot"></span><span>Key ${song.key}</span><span class="mdot"></span><span>${song.bpm} BPM</span><span class="mdot"></span><span>${song.date}</span></div></div><span class="fav ${song.starred?'on':''}" onclick="event.stopPropagation();toggleLibStar(${song.id})">${song.starred?'★':'☆'}</span>`;
+    c.appendChild(card);
+  });
+  document.getElementById('lTotal').textContent=songs.length;
+  document.getElementById('lGenres').textContent=new Set(songs.map(s=>s.genre)).size;
+  document.getElementById('lStars').textContent=songs.filter(s=>s.starred).length;
+  document.getElementById('loadBar').classList.toggle('show',libSelected!==null);
+}
+function toggleLibStar(id){const s=songs.find(s=>s.id===id);if(s)s.starred=!s.starred;renderLib();}
+function loadSelected(){const s=songs.find(s=>s.id===libSelected);if(s){showToast('Loaded "'+s.name+'" into player');navTo('play');}}
+
+// ── SETLISTS ──
+function renderSetlists(){
+  const c=document.getElementById('setlistList');c.innerHTML='';
+  setlists.forEach(sl=>{
+    const slSongs=sl.songs.map(id=>songs.find(s=>s.id===id)).filter(Boolean);
+    const card=document.createElement('div');card.className='sl-card'+(sl.open?' open':'');
+    const rows=slSongs.map((s,i)=>`<div class="sl-row"><div class="sl-num">${i+1}</div><div class="sl-sico">${s.icon}</div><div class="sl-snm">${s.name}</div><div class="sl-smt">Key ${s.key} · ${s.bpm} BPM</div></div>`).join('');
+    card.innerHTML=`<div class="sl-head" onclick="toggleSl(${sl.id})"><div class="sl-icon">${sl.icon}</div><div style="flex:1;"><div class="sl-nm">${sl.name}</div><div class="sl-mt">${slSongs.length} songs · ${sl.date}</div></div><div class="sl-arr">›</div></div><div class="sl-body">${rows}<div class="sl-footer"><button class="sl-play" onclick="playSl(${sl.id})">▶ Play setlist</button><button class="sl-edit" onclick="showToast('Edit coming soon')">Edit</button><button class="sl-del" onclick="deleteSl(${sl.id})">Delete</button></div></div>`;
+    c.appendChild(card);
+  });
+  document.getElementById('slCount').textContent=setlists.length;
+  document.getElementById('slSongs').textContent=setlists.reduce((a,s)=>a+s.songs.length,0);
+}
+function toggleSl(id){const sl=setlists.find(s=>s.id===id);if(sl)sl.open=!sl.open;renderSetlists();}
+function playSl(id){const sl=setlists.find(s=>s.id===id);const first=songs.find(s=>s.id===sl.songs[0]);if(first){showToast('Playing "'+sl.name+'"');navTo('play');}}
+function deleteSl(id){setlists=setlists.filter(s=>s.id!==id);showToast('Setlist deleted');renderSetlists();}
+function openNewSetlist(){slPickedIds=[];const p=document.getElementById('slPicker');p.innerHTML='';songs.forEach(song=>{const row=document.createElement('div');row.className='sl-pick-row';row.id='slp-'+song.id;row.onclick=()=>toggleSlPick(song.id);row.innerHTML=`<div class="sl-pick-chk" id="slpc-${song.id}"></div><div style="flex:1;font-size:13px;font-weight:600;color:var(--text);">${song.name}</div><div style="font-size:11px;color:var(--text3);">Key ${song.key} · ${song.bpm} BPM</div>`;p.appendChild(row);});document.getElementById('slName').value='';document.getElementById('slPickCnt').textContent='0 songs selected';document.getElementById('newSlSheet').classList.add('open');}
+function toggleSlPick(id){const idx=slPickedIds.indexOf(id);if(idx>-1)slPickedIds.splice(idx,1);else slPickedIds.push(id);document.getElementById('slp-'+id).classList.toggle('picked',slPickedIds.includes(id));document.getElementById('slpc-'+id).textContent=slPickedIds.includes(id)?'✓':'';document.getElementById('slPickCnt').textContent=slPickedIds.length+' song'+(slPickedIds.length!==1?'s':'')+' selected';}
+function createSetlist(){const name=document.getElementById('slName').value.trim();if(!name){showToast('Please enter a name');return;}if(slPickedIds.length===0){showToast('Pick at least one song');return;}const icons=['⛪','🌙','🎵','🙏','🎶'];setlists.unshift({id:Date.now(),name,icon:icons[Math.floor(Math.random()*icons.length)],date:'Upcoming',songs:[...slPickedIds],open:true});closeSheet('newSlSheet');showToast('"'+name+'" created with '+slPickedIds.length+' songs');renderSetlists();}
+
+// ── BLUETOOTH ──
+function renderDevices(){
+  const list=document.getElementById('devList');list.innerHTML='';
+  document.getElementById('btDevLbl').textContent=btScanning?'Available devices':'Connected devices';
+  const toShow=btScanning?devices:devices.filter(d=>d.connected);
+  if(toShow.length===0){list.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:var(--text3);">No devices. Tap Scan.</div>';return;}
+  toShow.forEach(dev=>{
+    const card=document.createElement('div');card.className='dev-card'+(dev.connected?' conn':'');
+    card.innerHTML=`<div class="dev-ico">${dev.icon}</div><div style="flex:1;"><div class="dev-nm">${dev.name}</div><div class="dev-mt">${dev.connected?'Connected · '+dev.type:dev.type}</div></div><div style="display:flex;align-items:center;gap:6px;"><span class="dev-sig">${dev.signal}</span>${dev.connected?`<button class="dev-disc" onclick="discDev('${dev.id}')">Disconnect</button>`:`<button class="dev-disc" style="color:var(--green);border-color:var(--green);" onclick="connDev('${dev.id}')">Connect</button>`}</div>`;
+    list.appendChild(card);
+  });
+}
+function toggleScan(){btScanning=!btScanning;document.getElementById('btScanBtn').textContent=btScanning?'Stop':'Scan';document.getElementById('btScanBtn').className='bt-toggle '+(btScanning?'stop':'scan');document.getElementById('btScanTitle').textContent=btScanning?'Scanning...':'Scan for devices';document.getElementById('btScanSub').textContent=btScanning?'Looking for nearby speakers...':'Tap scan to find nearby speakers';renderDevices();}
+function connDev(id){const d=devices.find(d=>d.id===id);if(!d)return;d.connected=true;btScanning=false;document.getElementById('btScanBtn').textContent='Scan';document.getElementById('btScanBtn').className='bt-toggle scan';document.getElementById('btScanTitle').textContent='Scan for devices';document.getElementById('btScanSub').textContent='Tap scan to find nearby speakers';document.getElementById('btQuickLbl').textContent=d.name.split(' ')[0];document.getElementById('btQuickBtn').classList.add('conn');showToast('Connected to '+d.name);renderDevices();}
+function discDev(id){const d=devices.find(d=>d.id===id);if(!d)return;d.connected=false;document.getElementById('btQuickLbl').textContent='Connect';document.getElementById('btQuickBtn').classList.remove('conn');showToast('Disconnected from '+d.name);renderDevices();}
+
+// ── PROFILE ──
+let editingField=null;
+function openEdit(field,label,current){editingField=field;document.getElementById('editTitle').textContent='Edit '+label.toLowerCase();document.getElementById('editLabel').textContent=label;document.getElementById('editInput').value=current;document.getElementById('editModal').classList.add('open');setTimeout(()=>document.getElementById('editInput').focus(),350);}
+function closeEditModal(e){if(e&&e.target!==document.getElementById('editModal'))return;closeSheet('editModal');}
+function saveEdit(){const val=document.getElementById('editInput').value.trim();if(!val)return;const map={name:{el:'iName',disp:'profileName',av:true},email:{el:'iEmail'},role:{el:'iRole',disp:'profileRole'},location:{el:'iLoc'}};const f=map[editingField];if(f){document.getElementById(f.el).textContent=val;if(f.disp)document.getElementById(f.disp).textContent=val;if(f.av){const ini=val.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);document.getElementById('profileAv').textContent=ini;document.getElementById('drawerAv').textContent=ini;document.getElementById('drawerName').textContent=val;}}closeSheet('editModal');showToast('Profile updated');}
+
+// ── PREMIUM ──
+let selectedPlan='planPro';
+const prices={monthly:{pro:'$9.99',church:'$24.99',proPd:'per month',churchPd:'per month',proWs:'',churchWs:''},yearly:{pro:'$5.99',church:'$14.99',proPd:'per month, billed yearly',churchPd:'per month, billed yearly',proWs:'$9.99/mo',churchWs:'$24.99/mo'}};
+let billMode='monthly';
+function setBill(t){billMode=t;document.getElementById('billM').classList.toggle('active',t==='monthly');document.getElementById('billY').classList.toggle('active',t==='yearly');const p=prices[t];document.getElementById('proPr').textContent=p.pro;document.getElementById('proPd').textContent=p.proPd;document.getElementById('churchPr').textContent=p.church;document.getElementById('churchPd').textContent=p.churchPd;const pw=document.getElementById('proWs');const cw=document.getElementById('churchWs');if(t==='yearly'){pw.textContent=p.proWs;pw.style.display='block';cw.textContent=p.churchWs;cw.style.display='block';}else{pw.style.display='none';cw.style.display='none';}}
+function selPlan(id){['planFree','planPro','planChurch'].forEach(p=>{const el=document.getElementById(p);el.className='plan-card'+(p==='planPro'?' pop':'')+( p===id?' sel':'');});selectedPlan=id;const btn=document.getElementById('premCTA');if(id==='planFree'){btn.textContent='Continue with Free';btn.style.background='#888';}else{btn.textContent='Start 7-day free trial';btn.style.background='var(--green)';}}
+function purchase(){if(selectedPlan==='planFree')return;showToast('Welcome to Pro! All features unlocked.');}
+
+// ── NOTIFICATIONS ──
+function setNFilter(tab,f){document.querySelectorAll('#screen-notifications .f-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');nFilter=f;renderNotifs();}
+function renderNotifs(){
+  const list=notifications.filter(n=>nFilter==='all'||n.type===nFilter);
+  const c=document.getElementById('notifList');const empty=document.getElementById('notifEmpty');c.innerHTML='';
+  if(list.length===0){empty.style.display='flex';return;}empty.style.display='none';
+  const today=list.filter(n=>n.time.startsWith('Today'));const earlier=list.filter(n=>!n.time.startsWith('Today'));
+  function rg(items,label){if(!items.length)return;const l=document.createElement('div');l.className='sec-lbl';l.textContent=label;c.appendChild(l);
+    items.forEach(n=>{const card=document.createElement('div');let bc='';if(!n.read){if(n.dc==='a')bc='unread-w';else if(n.dc==='b')bc='unread-b';else if(n.dc==='r')bc='unread-r';else bc='unread';}card.className='notif-card '+bc+(n.read?' read':'');card.onclick=()=>markNRead(n.id);
+    const ctaHtml=n.cta.length?`<div class="n-cta">${n.cta.map(ct=>ct.s==='sec'?`<button class="n-btn sec" onclick="event.stopPropagation();dismissN(${n.id})">${ct.l}</button>`:`<button class="n-btn ${ct.s}" onclick="event.stopPropagation();handleNCta(${n.id},'${ct.l}')">${ct.l}</button>`).join('')}</div>`:'';
+    const dotHtml=!n.read?`<div class="u-dot ${n.dc==='a'?'a':n.dc==='b'?'b':n.dc==='r'?'r':''}"></div>`:'';
+    card.innerHTML=`<div class="n-ico ${n.ibg}">${n.ico}</div><div class="n-body"><div class="n-title">${n.title}</div><div class="n-desc">${n.desc}</div><div class="n-time">${n.time}</div>${ctaHtml}</div><div class="n-right">${dotHtml}<button class="n-x" onclick="event.stopPropagation();dismissN(${n.id})">✕</button></div>`;
+    c.appendChild(card);});}
+  rg(today,'Today');rg(earlier,'Earlier');
+  document.getElementById('unreadCnt').textContent=notifications.filter(n=>!n.read).length;
+  document.getElementById('totalNCnt').textContent=notifications.length;
+  document.getElementById('alertNCnt').textContent=notifications.filter(n=>n.type==='alerts'&&!n.read).length;
+}
+function markNRead(id){const n=notifications.find(n=>n.id===id);if(n&&!n.read){n.read=true;renderNotifs();}}
+function markAllRead(){notifications.filter(n=>nFilter==='all'||n.type===nFilter).forEach(n=>n.read=true);renderNotifs();showToast('All marked as read');}
+function dismissN(id){const idx=notifications.findIndex(n=>n.id===id);if(idx>-1){notifications.splice(idx,1);renderNotifs();showToast('Notification dismissed');}}
+function handleNCta(id,label){markNRead(id);const msgs={'Try it now':'Opening player...','Open player':'Opening player...','Manage plan':'Opening plan...','Update payment':'Opening payment settings...'};showToast(msgs[label]||label);}
+
+// ── REFERRAL ──
+function renderInvited(){const c=document.getElementById('invList');if(!c)return;c.innerHTML='';invited.forEach(p=>{const row=document.createElement('div');row.className='inv-row';const badge=p.status==='joined'?`<span class="inv-b b-join">Joined ✓</span>`:`<span class="inv-b b-pend">Pending...</span>`;const rew=p.reward?`<span class="inv-b b-rew" style="margin-left:4px;">+1 mo</span>`:'';row.innerHTML=`<div class="inv-av" style="background:${p.bg};color:${p.tc};">${p.av}</div><div style="flex:1;"><div class="inv-nm">${p.name}</div><div style="font-size:11px;color:var(--text3);">${p.email}</div></div>${badge}${rew}`;c.appendChild(row);});}
+function copyLink(){const btn=document.getElementById('copyBtn');btn.textContent='Copied!';btn.classList.add('copied');showToast('Invite link copied!');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);}
+function addRefEmail(){const input=document.getElementById('refEmail');const val=input.value.trim();if(!val||!val.includes('@')){showToast('Enter a valid email');return;}if(pendingEmails.includes(val)){showToast('Already added');return;}pendingEmails.push(val);input.value='';renderRefTags();}
+function renderRefTags(){const c=document.getElementById('refEmailTags');c.innerHTML='';pendingEmails.forEach(e=>{const tag=document.createElement('div');tag.className='e-tag';tag.innerHTML=`${e}<span class="e-x" onclick="removeRefEmail('${e}')">✕</span>`;c.appendChild(tag);});document.getElementById('bulkBtn').classList.toggle('show',pendingEmails.length>0);}
+function removeRefEmail(e){pendingEmails=pendingEmails.filter(x=>x!==e);renderRefTags();}
+function sendBulk(){const count=pendingEmails.length;pendingEmails.forEach(email=>{invited.push({name:email.split('@')[0],email,av:email.slice(0,2).toUpperCase(),bg:'#f0f0ee',tc:'var(--text2)',status:'pending',reward:false});});pendingEmails=[];renderRefTags();renderInvited();showToast(count+' invite'+(count>1?'s':'')+' sent!');document.getElementById('refInv').textContent=invited.length;}
+
+// ── TUTORIAL ──
+const TUT_STEPS=[
+  {target:'el-genres',arrow:'a-top',pos:'below',title:'1. Pick your genre',desc:'Tap any genre to set the musical style. AutoKeys loads the right chords, key and tempo automatically.',btn:'Next →'},
+  {target:'el-stats',arrow:'a-top',pos:'below',title:'2. Key, BPM & Mode',desc:'These update the moment you pick a genre. Use the − / + buttons to manually override if needed.',btn:'Next →'},
+  {target:'el-override',arrow:'a-top',pos:'below',title:'3. Manual override',desc:'If the mic detects the wrong key or tempo, tap a key pill or use − / + to correct it instantly.',btn:'Next →'},
+  {target:'el-chord',arrow:'a-top',pos:'below',title:'4. Chord & progression',desc:'The big letter is the current chord. The pills show the full progression — they light up as each chord changes.',btn:'Next →'},
+  {target:'el-mic',arrow:'a-top',pos:'below',title:'5. Live mic & piano',desc:'The waveform animates when the mic is active. The green piano keys light up showing exactly what to play.',btn:'Next →'},
+  {target:'el-controls',arrow:'a-bot',pos:'above',title:'6. Start & connect',desc:'Tap Start listening to go live. Tap Connect to pair a Bluetooth speaker so sound plays in your venue.',btn:'Finish tour ✓'},
+];
+let tutActive=false,tutCurr=0;
+function showTutorial(){document.getElementById('tutStart').classList.add('active');}
+function beginTutorial(){document.getElementById('tutStart').classList.remove('active');document.getElementById('tutMask').classList.add('active');tutActive=true;tutCurr=0;showTutStep(0);}
+function skipTutorial(){document.getElementById('tutStart').classList.remove('active');document.getElementById('tutTT').classList.remove('active');document.getElementById('tutSpot').style.cssText='';document.getElementById('tutMask').classList.remove('active');tutActive=false;}
+function buildTutDots(idx){const c=document.getElementById('tutDots');c.innerHTML='';TUT_STEPS.forEach((_,i)=>{const d=document.createElement('div');d.className='tut-dot'+(i<idx?' done':i===idx?' cur':'');c.appendChild(d);});}
+function showTutStep(idx){const step=TUT_STEPS[idx];const el=document.getElementById(step.target);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const r=el.getBoundingClientRect();const pad=8;const sp=document.getElementById('tutSpot');sp.style.left=(r.left-pad)+'px';sp.style.top=(r.top-pad)+'px';sp.style.width=(r.width+pad*2)+'px';sp.style.height=(r.height+pad*2)+'px';document.getElementById('tutStepLbl').textContent='Step '+(idx+1)+' of '+TUT_STEPS.length;document.getElementById('tutTitle').textContent=step.title;document.getElementById('tutDesc').textContent=step.desc;document.getElementById('tutNextBtn').textContent=step.btn;buildTutDots(idx);const tt=document.getElementById('tutTT');tt.className='tut-tt active '+step.arrow;const ttW=280;const gap=16;const vw=window.innerWidth;let left=r.left;if(left+ttW>vw-10)left=vw-ttW-10;if(left<10)left=10;let top=step.pos==='below'?r.bottom+pad+gap:r.top-pad-gap-150;if(top<10)top=r.bottom+pad+gap;tt.style.left=left+'px';tt.style.top=top+'px';},320);}
+function nextTutStep(){tutCurr++;if(tutCurr>=TUT_STEPS.length){skipTutorial();showToast('Tour complete!');}else{showTutStep(tutCurr);}}
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# ── Node ──
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnp.*
+
+# ── React Native / Metro ──
+.metro-health-check*
+.expo/
+*.jsbundle
+
+# ── Android ──
+app/android/.gradle/
+app/android/app/build/
+app/android/build/
+app/android/local.properties
+audio-spike/**/.gradle/
+audio-spike/**/build/
+audio-spike/**/local.properties
+*.keystore
+!debug.keystore
+
+# ── iOS ──
+app/ios/Pods/
+app/ios/build/
+app/ios/*.xcworkspace/xcuserdata/
+*.xcuserstate
+DerivedData/
+
+# ── Env / secrets ──
+.env
+.env.*
+!.env.example
+*.pem
+google-services.json
+GoogleService-Info.plist
+
+# ── OS / editor ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
