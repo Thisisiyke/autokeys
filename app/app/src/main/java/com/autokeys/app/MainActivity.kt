@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -19,8 +20,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.autokeys.app.nav.Screen
 import com.autokeys.app.ui.AppDrawer
 import com.autokeys.app.ui.PlaceholderScreen
+import com.autokeys.app.screens.PlayScreen
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.background
+
 /**
  * AutoKeys - real app, step 1: navigation skeleton.
  *
@@ -129,7 +131,7 @@ private fun AppNavHost(nav: NavHostController) {
 
         // ── Main app ──
         composable(Screen.Play.route) {
-            PlaceholderScreen("Play", "Step 2 - the real Play screen: port the proven audio engine, genre grid, key/BPM, chord display, live piano, controls. This is the heart of the app.")
+            PlayScreen(onConnectBluetooth = { nav.navigate(Screen.Bluetooth.route) })
         }
         composable(Screen.Library.route) {
             PlaceholderScreen("Library", "Step 3 - saved sessions, search, filters, load into player, with real on-device persistence.")
